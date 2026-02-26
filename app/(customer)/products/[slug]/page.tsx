@@ -123,18 +123,52 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 dangerouslySetInnerHTML={{
                     __html: JSON.stringify({
                         '@context': 'https://schema.org',
-                        '@type': 'Product',
-                        name: product.name,
-                        description: product.description,
-                        image: product.pictures.map((p) => p.imageUrl),
-                        sku: product.id,
-                        offers: {
-                            '@type': 'Offer',
-                            price: product.price,
-                            priceCurrency: 'IDR',
-                            availability: 'https://schema.org/InStock',
-                            url: `https://fomanprint.vercel.app/products/${product.slug}`,
-                        },
+                        '@graph': [
+                            {
+                                '@type': 'Product',
+                                name: product.name,
+                                description: product.description,
+                                image: product.pictures.map((p) => p.imageUrl),
+                                sku: product.id,
+                                brand: {
+                                    '@type': 'Brand',
+                                    name: 'Foman Percetakan'
+                                },
+                                offers: {
+                                    '@type': 'Offer',
+                                    price: product.price,
+                                    priceCurrency: 'IDR',
+                                    availability: 'https://schema.org/InStock',
+                                    url: `https://fomanprint.vercel.app/products/${product.slug}`,
+                                    seller: {
+                                        '@type': 'Organization',
+                                        name: 'Foman Percetakan'
+                                    }
+                                },
+                            },
+                            {
+                                '@type': 'BreadcrumbList',
+                                itemListElement: [
+                                    {
+                                        '@type': 'ListItem',
+                                        position: 1,
+                                        name: 'Home',
+                                        item: 'https://fomanprint.vercel.app/'
+                                    },
+                                    ...(product.category ? [{
+                                        '@type': 'ListItem',
+                                        position: 2,
+                                        name: product.category.name,
+                                        item: `https://fomanprint.vercel.app/products/?category=${product.category.slug}`
+                                    }] : []),
+                                    {
+                                        '@type': 'ListItem',
+                                        position: product.category ? 3 : 2,
+                                        name: product.name
+                                    }
+                                ]
+                            }
+                        ]
                     }),
                 }}
             />
