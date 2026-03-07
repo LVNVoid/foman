@@ -7,10 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getSettings, updateSettings } from '@/actions/settings';
-import { getBanners } from '@/actions/banner';
+import { getStoreSettings as getSettings, updateStoreSettings as updateSettings } from '@/features/settings/actions/settings.actions';
+import { getBanners } from '@/features/banners/actions/banner.actions';
 import { toast } from 'sonner';
-import { BannerManager } from './_components/banner-manager';
+import { BannerManager } from '@/features/banners/components/admin/banner-manager';
 
 export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
@@ -26,14 +26,14 @@ export default function SettingsPage() {
                     getBanners()
                 ]);
 
-                if (settingsRes.success) {
+                if (settingsRes.success && 'settings' in settingsRes) {
                     setSettings(settingsRes.settings);
                 } else {
                     toast.error('Gagal memuat pengaturan toko.');
                 }
 
-                if (bannersRes.success) {
-                    setBanners(bannersRes.banners || []);
+                if (Array.isArray(bannersRes)) {
+                    setBanners(bannersRes);
                 } else {
                     toast.error('Gagal memuat banner.');
                 }
@@ -53,15 +53,13 @@ export default function SettingsPage() {
         const formData = new FormData(e.currentTarget);
 
         try {
-            const res = await updateSettings(formData);
+            const res = await updateSettings(null, formData);
             if (res.success) {
                 toast.success('Pengaturan berhasil disimpan!');
             } else {
                 toast.error('Gagal menyimpan pengaturan.');
             }
         } catch (error) {
-            toast.error('Terjadi kesalahan saat menyimpan.');
-        } finally {
             setSaving(false);
         }
     };

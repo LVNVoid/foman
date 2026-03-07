@@ -1,8 +1,8 @@
-import { getOrderById } from '@/actions/admin-order';
+import { getOrderById } from '@/features/orders/actions/admin-order.actions';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { OrderStatusUpdater } from './_components/order-status-updater';
+import { OrderStatusUpdater } from '@/features/orders/components/admin/order-status-updater';
 import { formatCurrency } from '@/lib/utils';
 
 interface OrderDetailPageProps {
@@ -56,7 +56,7 @@ export default async function OrderDetailPage({
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">User ID</dt>
                 <dd className="font-medium text-xs text-muted-foreground">
-                  {order.userId}
+                  {order.user.id}
                 </dd>
               </div>
             </dl>
@@ -90,7 +90,7 @@ export default async function OrderDetailPage({
         <div className="rounded-md border bg-card p-6">
           <h2 className="text-lg font-semibold mb-4">Order Items</h2>
           <div className="space-y-4">
-            {order.items.map((item) => (
+            {order.items.map((item: any) => (
               <div
                 key={item.id}
                 className="flex items-start justify-between border-b pb-4 last:border-0 last:pb-0"

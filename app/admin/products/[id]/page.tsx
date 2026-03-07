@@ -1,11 +1,11 @@
-import { getProduct } from '../actions';
+import { getProduct } from '@/features/products/actions/product.actions';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { ArrowLeft, Edit, Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-import { ProductImageGallery } from '@/components/customer/ProductImageGallery';
+import { ProductImageGallery } from '@/features/products/components/customer/product-image-gallery';
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;

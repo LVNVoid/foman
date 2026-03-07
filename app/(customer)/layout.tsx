@@ -1,9 +1,9 @@
-import { Navbar } from '@/components/customer/Navbar';
-import { Footer } from '@/components/customer/Footer';
-import { CartProvider } from '@/components/customer/CartContext';
-import { CartSheet } from '@/components/customer/CartSheet';
+import { Navbar } from '@/components/layouts/customer/navbar';
+import { Footer } from '@/components/layouts/customer/footer';
+import { CartProvider } from '@/features/cart/context/cart.context';
+import { CartSheet } from '@/features/cart/components/cart-sheet';
 
-import { getStoreSettings } from '@/app/admin/settings/actions';
+import { getStoreSettings } from '@/features/settings/actions/settings.actions';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
 import { GridPattern } from '@/components/ui/grid-pattern';
 
@@ -12,7 +12,8 @@ export default async function CustomerLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const settings = await getStoreSettings();
+    const result = await getStoreSettings();
+    const settings = 'settings' in result ? result.settings : null;
     const storeName = settings?.storeName;
 
     return (

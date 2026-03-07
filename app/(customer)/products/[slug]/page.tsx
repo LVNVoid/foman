@@ -1,11 +1,11 @@
 import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { AddToCartButton } from '@/components/customer/AddToCartButton';
+import { AddToCartButton } from '@/features/cart/components/add-to-cart-button';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
-import { ProductImageGallery } from '@/components/customer/ProductImageGallery';
+import { ProductImageGallery } from '@/features/products/components/customer/product-image-gallery';
 
 export async function generateStaticParams() {
     const products = await prisma.product.findMany({

@@ -1,4 +1,4 @@
-import { getCustomer } from '../actions';
+import { getCustomer } from '@/features/customers/actions/customer.actions';
 import { notFound } from 'next/navigation';
 import {
     Table,
@@ -72,7 +72,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                             <span className="font-medium">Total Pengeluaran:</span>
                             <span>
                                 {formatCurrency(
-                                    customer.orders.reduce((acc, order) => acc + order.total, 0)
+                                    customer.orders.reduce((acc: number, order: any) => acc + order.total, 0)
                                 )}
                             </span>
                         </div>
@@ -95,7 +95,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {customer.orders.map((order) => (
+                            {customer.orders.map((order: any) => (
                                 <TableRow key={order.id}>
                                     <TableCell className="font-medium">
                                         {order.id.substring(0, 8)}...

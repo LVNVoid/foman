@@ -1,5 +1,5 @@
-import { getUserOrders } from '@/actions/order';
-import { OrderToolbar } from '@/components/customer/OrderToolbar';
+import { getUserOrders } from '@/features/orders/actions/order.actions';
+import { OrderToolbar } from '@/features/orders/components/customer/order-toolbar';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
@@ -44,7 +44,7 @@ export default async function OrderHistoryPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {orders.map((order) => (
+                            {orders.map((order: any) => (
                                 <TableRow key={order.id}>
                                     <TableCell className="font-medium">{order.id.slice(0, 8)}...</TableCell>
                                     <TableCell>{formatDate(order.createdAt)}</TableCell>

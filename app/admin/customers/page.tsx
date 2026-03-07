@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { getCustomers } from './actions';
+import { getCustomers } from '@/features/customers/actions/customer.actions';
 import { formatDate } from '@/lib/utils';
 import { Eye, MoreHorizontal } from 'lucide-react';
 import {
@@ -18,8 +18,8 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { CustomersTableToolbar } from './_components/customers-table-toolbar';
-import { CustomersPagination } from './_components/customers-pagination';
+import { CustomersTableToolbar } from '@/features/customers/components/admin/customers-table-toolbar';
+import { CustomersPagination } from '@/features/customers/components/admin/customers-pagination';
 
 interface CustomersAdminPageProps {
     searchParams: Promise<{
@@ -65,7 +65,7 @@ export default async function CustomersAdminPage({ searchParams }: CustomersAdmi
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            customers.map((customer) => (
+                            customers.map((customer: any) => (
                                 <TableRow key={customer.id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                                     <TableCell className="p-4 align-middle font-medium">{customer.name}</TableCell>
                                     <TableCell className="p-4 align-middle">{customer.email}</TableCell>

@@ -1,10 +1,10 @@
 import { Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { getProducts } from './actions';
-import { getCategories } from '../categories/actions';
+import { getProducts } from '@/features/products/actions/product.actions';
+import { getCategories } from '@/features/categories/actions/category.actions';
 import Link from 'next/link';
-import { ProductTable } from './_components/product-table';
-import { ProductToolbar } from './_components/product-toolbar';
+import { ProductTable } from '@/features/products/components/admin/product-table';
+import { ProductToolbar } from '@/features/products/components/admin/product-toolbar';
 
 interface ProductsAdminPageProps {
   searchParams: Promise<{

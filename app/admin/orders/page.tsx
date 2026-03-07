@@ -1,9 +1,9 @@
 import { Suspense } from 'react';
-import { getOrders } from '@/actions/admin-order';
+import { getOrders } from '@/features/orders/actions/admin-order.actions';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { OrdersTableToolbar } from './_components/orders-table-toolbar';
-import { OrdersPagination } from './_components/orders-pagination';
+import { OrdersTableToolbar } from '@/features/orders/components/admin/orders-table-toolbar';
+import { OrdersPagination } from '@/features/orders/components/admin/orders-pagination';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Eye, MoreHorizontal } from 'lucide-react';
 import {
@@ -75,7 +75,7 @@ export default async function OrdersAdminPage({ searchParams }: OrdersAdminPageP
                                         </td>
                                     </tr>
                                 ) : (
-                                    orders.map((order) => (
+                                    orders.map((order: any) => (
                                         <tr key={order.id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                                             <td className="p-4 align-middle font-medium truncate max-w-[100px]" title={order.id}>
                                                 {order.id.substring(0, 8)}...

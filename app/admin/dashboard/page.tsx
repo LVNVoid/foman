@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getDashboardStats } from "./actions";
+import { getDashboardStats } from "@/features/dashboard/actions/dashboard.actions";
 import { CreditCard, DollarSign, Package, ShoppingCart, Users, TrendingUp, Clock } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -132,7 +132,7 @@ export default async function DashboardAdminPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {stats.recentOrders.map((order) => (
+                {stats.recentOrders.map((order: any) => (
                   <div
                     key={order.id}
                     className="flex items-center p-4 border rounded-lg hover:bg-muted/50 transition-colors"

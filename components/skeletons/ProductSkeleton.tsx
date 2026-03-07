@@ -5,12 +5,10 @@ export function ProductSkeleton() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="h-full rounded-lg border bg-card shadow-sm">
-                    {/* Image Skeleton */}
                     <div className="relative w-full aspect-square bg-muted rounded-t-lg overflow-hidden">
                         <Skeleton className="h-full w-full" />
                     </div>
 
-                    {/* Content Skeleton */}
                     <div className="p-4 space-y-3">
                         <Skeleton className="h-5 w-3/4" />
                         <Skeleton className="h-4 w-full" />

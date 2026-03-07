@@ -1,16 +1,16 @@
-import { ProductSection } from '@/components/customer/ProductSection';
-import { CategoryList } from '@/components/customer/CategoryList';
+import { ProductSection } from '@/features/products/components/customer/product-section';
+import { CategoryList } from '@/features/categories/components/customer/category-list';
 import { ProductSkeleton } from '@/components/skeletons/ProductSkeleton';
 import { Metadata } from 'next';
 import { Suspense } from 'react';
+import { getCachedCategory } from '@/features/categories/services/category.service';
+import { getCachedStoreSettings } from '@/features/settings/services/settings.service';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>
 
 interface ProductsPageProps {
     searchParams: SearchParams
 }
-
-import { getCachedCategory, getCachedStoreSettings } from '@/lib/data';
 
 export async function generateMetadata(props: ProductsPageProps): Promise<Metadata> {
     const searchParams = await props.searchParams;

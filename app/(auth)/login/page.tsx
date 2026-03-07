@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { LoginForm } from './login-form';
+import { LoginForm } from '@/features/auth/components/login-form';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';

@@ -1,7 +1,7 @@
-import { BannerSection } from '@/components/customer/BannerSection';
+import { BannerSection } from '@/features/banners/components/customer/banner-section';
 import { Metadata } from 'next';
-import { CategoryGrid } from '@/components/customer/CategoryGrid';
-import { ProductSection } from '@/components/customer/ProductSection';
+import { CategoryGrid } from '@/features/categories/components/customer/category-grid';
+import { ProductSection } from '@/features/products/components/customer/product-section';
 import { Suspense } from 'react';
 import { ProductSkeleton } from '@/components/skeletons/ProductSkeleton';
 

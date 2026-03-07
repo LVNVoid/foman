@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Printer, Users, Award, Clock } from "lucide-react";
-import { BrandsSection } from "@/components/customer/BrandsSection";
+import { BrandsSection } from "@/components/layouts/customer/brands-section";
 
 export default function AboutPage() {
     return (
@@ -13,7 +13,6 @@ export default function AboutPage() {
                 </p>
             </div>
 
-            {/* Info Section */}
             <section className="py-12 md:py-16 lg:py-20">
                 <div className="container">
                     <div className="grid gap-12  lg:grid-cols-2 lg:gap-8 items-center">

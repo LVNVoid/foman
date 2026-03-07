@@ -1,5 +1,4 @@
-import { getUserOrders } from '@/actions/order';
-import { OrderToolbar } from '@/components/customer/OrderToolbar';
+import { OrderToolbar } from '@/features/orders/components/customer/order-toolbar';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
@@ -15,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Metadata } from 'next';
+import { getUserOrders } from '@/features/orders/actions/order.actions';
 
 export const metadata: Metadata = {
     title: 'Pesanan Saya - Foman Percetakan',

@@ -1,16 +1,16 @@
-import { AdminProvider } from "@/components/admin/AdminContext";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { AdminHeader } from "@/components/admin/AdminHeader";
+import { AdminProvider } from "@/components/layouts/admin/admin.context";
+import { AdminSidebar } from "@/components/layouts/admin/admin-sidebar";
+import { AdminHeader } from "@/components/layouts/admin/admin-header";
 
-import { getStoreSettings } from '@/app/admin/settings/actions';
+import { getStoreSettingsService as getStoreSettings } from '@/features/settings/services/settings.service';
 
 export default async function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const settings = await getStoreSettings();
-    const storeName = settings?.storeName;
+    const result = await getStoreSettings();
+    const storeName = result.success ? result.settings?.storeName : "Store";
 
     return (
         <AdminProvider>

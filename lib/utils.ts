@@ -26,3 +26,15 @@ export const formatDate = (dateString: string | Date) => {
   }
   return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 };
+
+export const formatOrderStatus = (status: string) => {
+  const statuses: Record<string, string> = {
+    PENDING: "Menunggu Pembayaran",
+    PAID: "Dibayar",
+    PACKING: "Dikemas",
+    SHIPPED: "Dikirim",
+    COMPLETED: "Selesai",
+    CANCELLED: "Dibatalkan",
+  };
+  return statuses[status] || status;
+};

@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
-import { getCategories } from './actions';
-import { CategoryTable } from './_components/category-table';
-import { CategoryDialog } from './_components/category-dialog';
+import { getCategories } from '@/features/categories/actions/category.actions';
+import { CategoryTable } from '@/features/categories/components/admin/category-table';
+import { CategoryDialog } from '@/features/categories/components/admin/category-dialog';
 
 export default async function CategoriesPage() {
     const categories = await getCategories();

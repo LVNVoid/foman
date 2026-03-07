@@ -2,16 +2,16 @@
 
 import { Suspense } from 'react';
 
-import { useCart } from '@/components/customer/CartContext';
+import { useCart } from '@/features/cart/context/cart.context';
 import { Button } from '@/components/ui/button';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { createOrder } from '@/actions/order';
 import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { createOrder } from '@/features/orders/actions/order.actions';
 
 function CheckoutContent() {
     const { items, cartTotal, clearCart } = useCart();

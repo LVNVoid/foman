@@ -1,4 +1,4 @@
-import { getOrderById } from '@/actions/admin-order';
+import { getOrderById } from '@/features/orders/actions/admin-order.actions';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
@@ -30,7 +30,7 @@ export default async function OrderDetailPage(props: PageProps) {
     }
 
     // Security Check: Ensure order belongs to logged-in user
-    if (order.userId !== session.user.id) {
+    if (order.user?.id !== session.user.id) {
         redirect('/orders');
     }
 
@@ -60,7 +60,7 @@ export default async function OrderDetailPage(props: PageProps) {
                             <CardTitle>Item Pesanan</CardTitle>
                         </CardHeader>
                         <CardContent className="grid gap-4">
-                            {order.items.map((item) => (
+                            {order.items.map((item: any) => (
                                 <div key={item.id} className="flex items-start justify-between gap-4">
                                     <div className="flex items-center gap-4">
                                         <div className="relative h-16 w-16 overflow-hidden rounded-lg border bg-muted">
