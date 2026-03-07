@@ -4,8 +4,20 @@ import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { Metadata } from 'next';
 
+import { siteConfig } from '@/lib/seo';
+
 export const metadata: Metadata = {
   title: 'Daftar Akun - Foman Percetakan',
+  description: 'Buat akun baru di Foman Percetakan. Dapatkan akses cepat dan mudah untuk memesan berbagai produk cetak berkualitas.',
+  alternates: {
+    canonical: `${siteConfig.baseUrl}/register`,
+  },
+  openGraph: {
+    title: 'Daftar Akun - Foman Percetakan',
+    description: 'Buat akun baru di Foman Percetakan.',
+    url: `${siteConfig.baseUrl}/register`,
+    type: 'website',
+  },
   robots: {
     index: false,
     follow: false,

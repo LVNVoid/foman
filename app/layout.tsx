@@ -6,6 +6,8 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from 'react-hot-toast';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Metadata } from 'next';
+import { siteConfig } from '@/lib/seo';
+import { OrganizationJsonLd } from '@/components/json-ld';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -13,10 +15,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://fomanprint.vercel.app'),
+  metadataBase: new URL(siteConfig.baseUrl),
   title: {
     default: 'Foman Percetakan - Jasa Cetak Berkualitas & Terpercaya',
-    template: '%s | Foman Percetakan'
+    template: '%s | Foman Percetakan',
   },
   description: 'Foman Percetakan menyediakan jasa cetak berkualitas tinggi untuk brosur, kartu nama, banner, spanduk, stiker, dan berbagai kebutuhan percetakan lainnya dengan harga terjangkau dan pengiriman cepat.',
   keywords: [
@@ -45,7 +47,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'id_ID',
-    url: 'https://fomanprint.vercel.app',
+    url: siteConfig.baseUrl,
     siteName: 'Foman Percetakan',
     title: 'Foman Percetakan - Jasa Cetak Berkualitas & Terpercaya',
     description: 'Solusi lengkap untuk semua kebutuhan percetakan Anda. Kualitas terbaik, harga kompetitif, dan layanan profesional.',
@@ -93,6 +95,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} antialiased font-sans`}
       >
+        <OrganizationJsonLd />
         <NextTopLoader showSpinner={false} />
         <SpeedInsights />
         <SessionProvider>

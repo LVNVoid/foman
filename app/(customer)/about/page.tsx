@@ -2,6 +2,24 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Printer, Users, Award, Clock } from "lucide-react";
 import { BrandsSection } from "@/components/layouts/customer/brands-section";
+import { Metadata } from 'next';
+import { siteConfig } from '@/lib/seo';
+
+export const metadata: Metadata = {
+    title: 'Tentang Kami | Foman Percetakan',
+    description: 'Pelajari lebih lanjut tentang Foman Percetakan. Kami adalah mitra percetakan terpercaya sejak bertahun-tahun dengan teknologi modern dan tim ahli profesional.',
+    keywords: ['tentang foman percetakan', 'profil percetakan', 'sejarah foman printing', 'layanan cetak terbaik'],
+    alternates: {
+        canonical: `${siteConfig.baseUrl}/about`,
+    },
+    openGraph: {
+        title: 'Tentang Kami | Foman Percetakan',
+        description: 'Mitra percetakan terpercaya Anda untuk segala kebutuhan bisnis dan personal. Kualitas terbaik, harga bersaing.',
+        url: `${siteConfig.baseUrl}/about`,
+        type: 'website',
+        images: [`${siteConfig.baseUrl}/og-image-foman.jpg`],
+    },
+};
 
 export default function AboutPage() {
     return (

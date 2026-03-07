@@ -5,8 +5,20 @@ import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { Metadata } from 'next';
 
+import { siteConfig } from '@/lib/seo';
+
 export const metadata: Metadata = {
   title: 'Login - Foman Percetakan',
+  description: 'Masuk ke akun Anda untuk mengakses layanan cetak di Foman Percetakan. Nikmati kemudahan memesan berbagai produk cetak berkualitas seperti brosur, kartu nama, banner, dan lainnya.',
+  alternates: {
+    canonical: `${siteConfig.baseUrl}/login`,
+  },
+  openGraph: {
+    title: 'Login - Foman Percetakan',
+    description: 'Masuk ke akun Anda untuk mengakses layanan cetak di Foman Percetakan.',
+    url: `${siteConfig.baseUrl}/login`,
+    type: 'website',
+  },
   robots: {
     index: false,
     follow: false,

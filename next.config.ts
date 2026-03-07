@@ -23,6 +23,16 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '4MB',
     },
   },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'fomanprint.vercel.app' }],
+        destination: 'https://foman.id/:path*',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

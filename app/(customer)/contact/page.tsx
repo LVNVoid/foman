@@ -7,6 +7,30 @@ async function getContactSettings() {
     return settings;
 }
 
+import { Metadata } from 'next';
+import { siteConfig } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+    const settings = await getContactSettings();
+    const storeName = settings?.storeName || 'Foman Percetakan';
+
+    return {
+        title: `Hubungi Kami | ${storeName}`,
+        description: `Hubungi ${storeName} untuk pertanyaan tentang layanan, produk cetak, atau pesanan khusus Anda. Kami siap melayani di ${settings?.contactAddress || 'Jakarta'}.`,
+        keywords: ['hubungi foman percetakan', 'kontak percetakan', 'alamat foman printing', 'nomor telepon foman percetakan', 'customer service cetak'],
+        alternates: {
+            canonical: `${siteConfig.baseUrl}/contact`,
+        },
+        openGraph: {
+            title: `Hubungi Kami | ${storeName}`,
+            description: `Hubungi ${storeName} untuk pertanyaan tentang layanan, produk cetak, atau pesanan khusus Anda. Kami siap membantu.`,
+            url: `${siteConfig.baseUrl}/contact`,
+            type: 'website',
+            images: [`${siteConfig.baseUrl}/og-image-foman.jpg`],
+        },
+    };
+}
+
 export default async function ContactPage() {
     const settings = await getContactSettings();
 

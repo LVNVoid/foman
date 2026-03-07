@@ -6,6 +6,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
 import { ProductImageGallery } from '@/features/products/components/customer/product-image-gallery';
+import { siteConfig } from '@/lib/seo';
 
 export async function generateStaticParams() {
     const products = await prisma.product.findMany({
@@ -42,7 +43,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     }
 
     const primaryImage = product.pictures[0]?.imageUrl || '/placeholder-image.jpg';
-    const productUrl = `https://printing-app-ruddy.vercel.app/products/${slug}`;
+    const productUrl = `${siteConfig.baseUrl}/products/${slug}`;
 
     const seoDescription = product.description
         ? `${product.description.substring(0, 150)}${product.description.length > 150 ? '...' : ''}`
@@ -139,7 +140,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                                     price: product.price,
                                     priceCurrency: 'IDR',
                                     availability: 'https://schema.org/InStock',
-                                    url: `https://fomanprint.vercel.app/products/${product.slug}`,
+                                    url: `${siteConfig.baseUrl}/products/${product.slug}`,
                                     seller: {
                                         '@type': 'Organization',
                                         name: 'Foman Percetakan'
@@ -153,13 +154,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
                                         '@type': 'ListItem',
                                         position: 1,
                                         name: 'Home',
-                                        item: 'https://fomanprint.vercel.app/'
+                                        item: siteConfig.baseUrl
                                     },
                                     ...(product.category ? [{
                                         '@type': 'ListItem',
                                         position: 2,
                                         name: product.category.name,
-                                        item: `https://fomanprint.vercel.app/products/?category=${product.category.slug}`
+                                        item: `${siteConfig.baseUrl}/products/?category=${product.category.slug}`
                                     }] : []),
                                     {
                                         '@type': 'ListItem',

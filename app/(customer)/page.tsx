@@ -4,19 +4,20 @@ import { CategoryGrid } from '@/features/categories/components/customer/category
 import { ProductSection } from '@/features/products/components/customer/product-section';
 import { Suspense } from 'react';
 import { ProductSkeleton } from '@/components/skeletons/ProductSkeleton';
+import { siteConfig } from '@/lib/seo';
 
 export const metadata: Metadata = {
   title: 'Foman Percetakan - Jasa Cetak Profesional Indonesia',
   description:
     'Foman Percetakan menawarkan layanan cetak berkualitas tinggi: offset, digital printing, dan large format printing untuk kebutuhan bisnis maupun personal.',
   alternates: {
-    canonical: 'https://fomanprint.vercel.app/',
+    canonical: siteConfig.baseUrl,
   },
   openGraph: {
     title: 'Foman Percetakan - Jasa Cetak Profesional Indonesia',
     description:
       'Percetakan modern dengan teknologi terkini. Hasil berkualitas, harga kompetitif.',
-    url: 'https://fomanprint.vercel.app/',
+    url: siteConfig.baseUrl,
     siteName: 'Foman Percetakan',
     images: [
       {

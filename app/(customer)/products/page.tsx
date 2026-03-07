@@ -5,6 +5,7 @@ import { Metadata } from 'next';
 import { Suspense } from 'react';
 import { getCachedCategory } from '@/features/categories/services/category.service';
 import { getCachedStoreSettings } from '@/features/settings/services/settings.service';
+import { siteConfig } from '@/lib/seo';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>
 
@@ -25,7 +26,7 @@ export async function generateMetadata(props: ProductsPageProps): Promise<Metada
 
     const storeName = storeSettings?.storeName || 'Foman Percetakan';
 
-    const baseUrl = 'https://fomanprint.vercel.app/products';
+    const baseUrl = `${siteConfig.baseUrl}/products`;
 
     const urlParams = new URLSearchParams();
     if (categorySlug) urlParams.set('category', categorySlug);
