@@ -11,7 +11,12 @@ interface GetOrdersParams {
   limit?: number;
 }
 
-export async function getOrders({ query, status, page = 1, limit = 10 }: GetOrdersParams = {}) {
+export async function getOrders({
+  query,
+  status,
+  page = 1,
+  limit = 10,
+}: GetOrdersParams = {}) {
   try {
     const skip = (page - 1) * limit;
 
@@ -56,15 +61,15 @@ export async function getOrders({ query, status, page = 1, limit = 10 }: GetOrde
       prisma.order.count({ where }),
     ]);
 
-    return { 
-      success: true, 
-      orders, 
+    return {
+      success: true,
+      orders,
       pagination: {
         total,
         pages: Math.ceil(total / limit),
         page,
-        limit
-      }
+        limit,
+      },
     };
   } catch (error) {
     console.error('Error fetching orders:', error);
@@ -81,14 +86,15 @@ export async function getOrderById(id: string) {
           select: {
             name: true,
             email: true,
+            phoneNumber: true,
           },
         },
         items: {
           include: {
             product: {
               include: {
-                pictures: true
-              }
+                pictures: true,
+              },
             },
           },
         },

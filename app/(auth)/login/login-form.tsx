@@ -23,10 +23,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Alamat email tidak valid' }),
-  password: z.string().min(6, { message: 'Kata sandi harus minimal 6 karakter' }),
+  password: z
+    .string()
+    .min(6, { message: 'Kata sandi harus minimal 6 karakter' }),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -37,6 +40,7 @@ export function LoginForm({
 }: React.ComponentProps<'div'>) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const {
@@ -93,7 +97,7 @@ export function LoginForm({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="Alamat email Anda"
                   {...register('email')}
                   suppressHydrationWarning
                 />
@@ -102,19 +106,26 @@ export function LoginForm({
               <Field>
                 <div className="flex items-center justify-between">
                   <FieldLabel htmlFor="password">Kata sandi</FieldLabel>
-                  <a
-                    href="#"
-                    className="text-sm text-muted-foreground hover:underline"
-                  >
-                    Lupa kata sandi Anda?
-                  </a>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  {...register('password')}
-                  suppressHydrationWarning
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    {...register('password')}
+                    suppressHydrationWarning
+                    className="pr-10"
+                  />
+
+                  <Button
+                    variant="ghost"
+                    type="button"
+                    size="icon-sm"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </Button>
+                </div>
                 <FieldError errors={[{ message: errors.password?.message }]} />
               </Field>
               {error && (
