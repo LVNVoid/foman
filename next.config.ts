@@ -1,7 +1,6 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
     remotePatterns: [
       {
@@ -22,16 +21,6 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '4MB',
     },
-  },
-  async redirects() {
-    return [
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'fomanprint.vercel.app' }],
-        destination: 'https://foman.id/:path*',
-        permanent: true,
-      },
-    ];
   },
 };
 
