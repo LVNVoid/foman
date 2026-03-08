@@ -1,7 +1,5 @@
 "use server";
 
-import { z } from "zod";
-import { ActionResult } from "@/types";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createProductSchema, updateProductSchema } from "../schemas/product.schema";
@@ -43,6 +41,7 @@ export async function createProduct(formData: FormData) {
 
   revalidatePath("/admin/products");
   revalidatePath("/products");
+  revalidatePath("/");
   redirect("/admin/products");
 }
 
@@ -65,6 +64,7 @@ export async function updateProduct(id: string, formData: FormData) {
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
   revalidatePath("/products");
+  revalidatePath("/");
   redirect("/admin/products");
 }
 
@@ -72,4 +72,5 @@ export async function deleteProduct(id: string) {
   await deleteProductService(id);
   revalidatePath("/admin/products");
   revalidatePath("/products");
+  revalidatePath("/");
 }
