@@ -65,16 +65,18 @@ export function Navbar({ storeName }: { storeName?: string }) {
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2">
-                <div className="flex h-14 sm:h-16 items-center justify-between gap-2 sm:gap-4">
-                    {/* Logo */}
-                    <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group shrink-0">
-                        <div className="bg-primary/10 p-1.5 sm:p-2 rounded-lg group-hover:bg-primary/20 transition-colors">
-                            <Printer className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
-                        </div>
-                        <span className="text-base sm:text-xl font-bold tracking-tight xs:inline">
-                            Foman Print
-                        </span>
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex h-16 sm:h-20 items-center justify-between gap-2 sm:gap-4">
+                    <Link href="/" className="flex items-center gap-1.5 sm:gap-4 group shrink-0">
+                        <Image
+                            src="/logo-foman.png"
+                            alt="Foman Kreasi"
+                            width={200}
+                            height={200}
+                            className="h-12 sm:h-16 w-auto object-contain"
+                            priority
+                        />
+                        <span className="font-bold text-xl sm:text-2xl tracking-tight">Foman Kreasi</span>
                     </Link>
 
                     {/* Desktop Search Bar */}

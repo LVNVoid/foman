@@ -7,7 +7,7 @@ export const bannerSchema = z.object({
   image: z.custom<File>((val) => val instanceof File, "Image file is required").refine(
     (file) => file.size > 0, "Image is required"
   ).refine(
-    (file) => file.size <= 2 * 1024 * 1024, "File size must be less than 2MB"
+    (file) => file.size <= 8 * 1024 * 1024, "File size must be less than 8MB"
   ),
 });
 
