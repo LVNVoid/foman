@@ -6,11 +6,15 @@ import { useCart } from '@/features/cart/context/cart.context';
 import { Product, ProductPicture } from '@/app/generated/prisma/client';
 import toast from 'react-hot-toast';
 
-interface AddToCartButtonProps {
-    product: Product & { pictures: ProductPicture[] };
+import { CartProduct } from '@/types/product';
+
+export interface AddToCartButtonProps {
+    product: CartProduct;
+    disabled?: boolean;
+    className?: string;
 }
 
-export function AddToCartButton({ product }: AddToCartButtonProps) {
+export function AddToCartButton({ product, disabled = false, className }: AddToCartButtonProps) {
     const { addItem } = useCart();
 
     const handleAddToCart = () => {
@@ -19,8 +23,13 @@ export function AddToCartButton({ product }: AddToCartButtonProps) {
     };
 
     return (
-        <Button size="lg" className="w-full md:w-auto gap-2" onClick={handleAddToCart}>
-            <ShoppingCart className="h-5 w-5" />
+        <Button
+            onClick={handleAddToCart}
+            className={`w-full gap-2 ${className || ''}`}
+            size="lg"
+            disabled={disabled}
+        >
+            <ShoppingCart className="w-5 h-5" />
             Tambah ke Keranjang
         </Button>
     );

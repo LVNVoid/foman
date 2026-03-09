@@ -29,7 +29,7 @@ export function FeaturesSection() {
             <div className="container">
                 <div className="text-center max-w-3xl mx-auto mb-16">
                     <h2 className="text-3xl font-bold tracking-tight md:text-5xl mb-6">
-                        Mengapa Memilih PrintMaster?
+                        Mengapa Memilih Foman?
                     </h2>
                     <p className="text-lg text-muted-foreground">
                         Kami lebih dari sekadar perusahaan percetakan. Kami adalah mitra sukses Anda.

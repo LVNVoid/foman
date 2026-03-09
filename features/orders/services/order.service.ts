@@ -6,33 +6,52 @@ import { Prisma } from "@/app/generated/prisma/client";
 export async function createOrderService(data: CreateOrderInput) {
   const { userId, items } = data;
 
-  const aggregatedItems = new Map<string, number>();
+  // Aggregate items by a composite key so same products with different variants are separated
+  const aggregatedItems = new Map<string, { productId: string; productVariantId?: string; quantity: number }>();
+  
   for (const item of items) {
-    const currentQuantity = aggregatedItems.get(item.productId) || 0;
-    aggregatedItems.set(item.productId, currentQuantity + item.quantity);
+    const key = item.productVariantId ? `${item.productId}-${item.productVariantId}` : item.productId;
+    const current = aggregatedItems.get(key) || { productId: item.productId, productVariantId: item.productVariantId, quantity: 0 };
+    current.quantity += item.quantity;
+    aggregatedItems.set(key, current);
   }
 
   let total = 0;
   const orderItemsData = [];
 
-  for (const [productId, quantity] of aggregatedItems.entries()) {
+  for (const [key, cartItem] of aggregatedItems.entries()) {
     const product = await prisma.product.findUnique({
-      where: { id: productId },
+      where: { id: cartItem.productId },
       select: {
         id: true,
-        price: true,
+        minPrice: true,
       },
     });
 
     if (!product) {
-      throw new Error(`Produk dengan ID ${productId} tidak ditemukan`);
+      throw new Error(`Produk dengan ID ${cartItem.productId} tidak ditemukan`);
     }
 
-    total += product.price * quantity;
+    let finalPrice = product.minPrice ?? 0;
+
+    if (cartItem.productVariantId) {
+      const variant = await prisma.productVariant.findUnique({
+        where: { id: cartItem.productVariantId },
+        select: { id: true, price: true },
+      });
+
+      if (!variant) {
+         throw new Error(`Varian produk dengan ID ${cartItem.productVariantId} tidak ditemukan`);
+      }
+      finalPrice = variant.price;
+    }
+
+    total += finalPrice * cartItem.quantity;
     orderItemsData.push({
-      productId: productId,
-      quantity: quantity,
-      price: product.price,
+      productId: cartItem.productId,
+      productVariantId: cartItem.productVariantId || null,
+      quantity: cartItem.quantity,
+      price: finalPrice,
     });
   }
 
@@ -58,6 +77,7 @@ export async function createOrderService(data: CreateOrderInput) {
         select: {
           id: true,
           productId: true,
+          productVariantId: true,
           quantity: true,
           price: true,
         },
@@ -113,7 +133,7 @@ export async function getUserOrdersService(userId: string, statuses?: string[]) 
             select: {
               id: true,
               name: true,
-              price: true,
+              minPrice: true,
               pictures: {
                 select: {
                   id: true,
@@ -123,6 +143,13 @@ export async function getUserOrdersService(userId: string, statuses?: string[]) 
               },
             },
           },
+          productVariant: {
+            select: {
+              id: true,
+              name: true,
+              price: true,
+            }
+          }
         },
       },
     },
@@ -219,7 +246,7 @@ export async function getOrderByIdService(id: string) {
             select: {
               id: true,
               name: true,
-              price: true,
+              minPrice: true,
               pictures: {
                 select: {
                   id: true,
@@ -229,6 +256,13 @@ export async function getOrderByIdService(id: string) {
               },
             },
           },
+          productVariant: {
+            select: {
+              id: true,
+              name: true,
+              price: true,
+            }
+          }
         },
       },
     },

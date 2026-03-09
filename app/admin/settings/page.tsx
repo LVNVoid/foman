@@ -56,10 +56,16 @@ export default function SettingsPage() {
             const res = await updateSettings(null, formData);
             if (res.success) {
                 toast.success('Pengaturan berhasil disimpan!');
+                const refreshed = await getSettings();
+                if (refreshed.success && 'settings' in refreshed) {
+                    setSettings(refreshed.settings);
+                }
             } else {
                 toast.error('Gagal menyimpan pengaturan.');
             }
         } catch (error) {
+            toast.error('Terjadi kesalahan saat menyimpan.');
+        } finally {
             setSaving(false);
         }
     };
@@ -97,7 +103,7 @@ export default function SettingsPage() {
                                         id="storeName"
                                         name="storeName"
                                         defaultValue={settings?.storeName}
-                                        placeholder="Foman Printing"
+                                        placeholder="Foman Kreasi"
                                         required
                                     />
                                 </div>

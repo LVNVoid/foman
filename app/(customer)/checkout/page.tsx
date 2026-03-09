@@ -48,7 +48,8 @@ function CheckoutContent() {
                 items: items.map((item) => ({
                     productId: item.product.id,
                     quantity: item.quantity,
-                })),
+                    productVariantId: item.product.selectedVariant?.id || undefined
+                }))
             });
 
             if (result.success) {
@@ -75,7 +76,7 @@ function CheckoutContent() {
                     <div className="border rounded-lg p-6 space-y-4">
                         <h2 className="text-xl font-semibold mb-4">Ringkasan Pesanan</h2>
                         {items.map((item) => (
-                            <div key={item.product.id} className="flex gap-4 py-2 border-b last:border-0">
+                            <div key={item.id} className="flex gap-4 py-2 border-b last:border-0">
                                 <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border bg-secondary/20">
                                     {item.product.pictures[0]?.imageUrl ? (
                                         <Image
@@ -91,14 +92,21 @@ function CheckoutContent() {
                                     )}
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="font-medium">{item.product.name}</h3>
+                                    <h3 className="font-medium">
+                                        {item.product.name}
+                                        {item.product.selectedVariant && (
+                                            <span className="text-sm font-normal text-muted-foreground ml-2">
+                                                ({item.product.selectedVariant.name})
+                                            </span>
+                                        )}
+                                    </h3>
                                     <p className="text-sm text-muted-foreground">
                                         {item.quantity} x{' '}
-                                        {formatCurrency(item.product.price)}
+                                        {formatCurrency(item.product.selectedVariant?.price || item.product.minPrice || 0)}
                                     </p>
                                 </div>
                                 <div className="font-bold">
-                                    {formatCurrency(item.product.price * item.quantity)}
+                                    {formatCurrency((item.product.selectedVariant?.price || item.product.minPrice || 0) * item.quantity)}
                                 </div>
                             </div>
                         ))}

@@ -1,10 +1,18 @@
+import { Product, ProductPicture, ProductVariant, ProductSpecification } from '@/app/generated/prisma/client';
+
+export type ProductWithDetails = Product & {
+    pictures: ProductPicture[];
+    variants?: ProductVariant[];
+    specifications?: ProductSpecification[];
+};
 
 export interface ProductListItem {
     id: string;
     name: string;
     slug: string;
     description: string | null;
-    price: number; 
+    minPrice: number | null;
+    maxPrice: number | null;
     pictures: {
         id: string;
         imageUrl: string | null;
@@ -14,18 +22,30 @@ export interface ProductListItem {
         name: string;
         slug: string;
     } | null;
+    variants: {
+        id: string;
+        name: string;
+        price: number;
+        stock: number;
+        unit: string | null;
+    }[] | null;
 }
 
 export interface CartProduct {
     id: string;
     name: string;
     slug: string;
-    price: number;
+    minPrice: number | null;
     description?: string | null;
     pictures: {
         id: string;
         imageUrl: string | null;
     }[];
+    selectedVariant?: {
+        id: string;
+        name: string;
+        price: number;
+    };
 }
 
 export interface CategoryItem {

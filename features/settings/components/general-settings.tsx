@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { updateStoreSettings } from '@/features/settings/actions/settings.actions';
 import { useFormStatus } from 'react-dom';
 import { StoreSettings } from '@/app/generated/prisma/client';
-import { useActionState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -21,6 +21,28 @@ function SubmitButton() {
 export function GeneralSettings({ settings }: { settings: StoreSettings | null }) {
     const [state, formAction] = useActionState(updateStoreSettings, null);
 
+    // Stable key: hanya increment setelah sukses, bukan setiap render
+    const [formKey, setFormKey] = useState(0);
+
+    // Controlled state agar input update saat settings dari server berubah
+    const [storeName, setStoreName] = useState(settings?.storeName ?? 'My Store');
+    const [whatsappNumber, setWhatsappNumber] = useState(settings?.whatsappNumber ?? '');
+
+    // Sync saat settings baru datang dari server (setelah revalidatePath)
+    useEffect(() => {
+        setStoreName(settings?.storeName ?? 'My Store');
+        setWhatsappNumber(settings?.whatsappNumber ?? '');
+    }, [settings]);
+
+    // Reset form key hanya sekali per submit sukses
+    useEffect(() => {
+        if (state?.success) {
+            setFormKey((prev) => prev + 1);
+        }
+    }, [state?.success]);
+
+    const fieldErrors = state?.error as Record<string, string[]> | undefined;
+
     return (
         <Card>
             <CardHeader>
@@ -28,17 +50,21 @@ export function GeneralSettings({ settings }: { settings: StoreSettings | null }
                 <CardDescription>Kelola informasi umum toko Anda.</CardDescription>
             </CardHeader>
             <CardContent>
-                <form action={formAction} className="space-y-4 max-w-xl">
+                {state?.success && (
+                    <p className="text-sm text-green-600 mb-4">✓ Pengaturan berhasil disimpan.</p>
+                )}
+                <form key={formKey} action={formAction} className="space-y-4 max-w-xl">
                     <div className="space-y-2">
                         <Label htmlFor="storeName">Nama Toko</Label>
                         <Input
                             id="storeName"
                             name="storeName"
-                            defaultValue={settings?.storeName || 'My Store'}
+                            value={storeName}
+                            onChange={(e) => setStoreName(e.target.value)}
                             required
                         />
-                        {((state?.error as Record<string, string[]>)?.storeName) && (
-                            <p className="text-sm text-red-500">{(state?.error as Record<string, string[]>).storeName[0]}</p>
+                        {fieldErrors?.storeName && (
+                            <p className="text-sm text-red-500">{fieldErrors.storeName[0]}</p>
                         )}
                     </div>
                     <div className="space-y-2">
@@ -46,13 +72,17 @@ export function GeneralSettings({ settings }: { settings: StoreSettings | null }
                         <Input
                             id="whatsappNumber"
                             name="whatsappNumber"
-                            defaultValue={settings?.whatsappNumber || ''}
+                            value={whatsappNumber}
+                            onChange={(e) => setWhatsappNumber(e.target.value)}
                             placeholder="e.g. 6281234567890"
                         />
-                        {((state?.error as Record<string, string[]>)?.whatsappNumber) && (
-                            <p className="text-sm text-red-500">{(state?.error as Record<string, string[]>).whatsappNumber[0]}</p>
+                        {fieldErrors?.whatsappNumber && (
+                            <p className="text-sm text-red-500">{fieldErrors.whatsappNumber[0]}</p>
                         )}
                     </div>
+                    {fieldErrors?.form && (
+                        <p className="text-sm text-red-500">{fieldErrors.form[0]}</p>
+                    )}
                     <SubmitButton />
                 </form>
             </CardContent>

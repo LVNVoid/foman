@@ -6,6 +6,14 @@ import Link from 'next/link';
 import { ArrowLeft, Edit, Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { ProductImageGallery } from '@/features/products/components/customer/product-image-gallery';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -64,7 +72,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     <div className="rounded-lg border bg-card p-6">
                         <h2 className="text-sm font-medium text-muted-foreground mb-2">Harga</h2>
                         <p className="text-3xl font-bold text-primary">
-                            {formatCurrency(product.price)}
+                            {product.minPrice !== null && product.maxPrice !== null && product.minPrice !== product.maxPrice
+                                ? `${formatCurrency(product.minPrice)} - ${formatCurrency(product.maxPrice)}`
+                                : product.minPrice !== null
+                                    ? formatCurrency(product.minPrice)
+                                    : '-'}
                         </p>
                     </div>
                     <div className="rounded-lg border bg-card p-6">
@@ -97,6 +109,61 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                             </div>
                         </div>
                     </div>
+
+                    {/* Variants Section */}
+                    {product.variants && product.variants.length > 0 && (
+                        <div className="rounded-lg border bg-card p-6 space-y-4">
+                            <h2 className="text-lg font-semibold">Varian Produk</h2>
+                            <div className="rounded-md border">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Nama Varian</TableHead>
+                                            <TableHead>Harga</TableHead>
+                                            <TableHead>Stok</TableHead>
+                                            <TableHead>Satuan</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {product.variants.map((variant: any) => (
+                                            <TableRow key={variant.id}>
+                                                <TableCell className="font-medium">{variant.name}</TableCell>
+                                                <TableCell>{formatCurrency(variant.price)}</TableCell>
+                                                <TableCell>{variant.stock}</TableCell>
+                                                <TableCell className="text-muted-foreground">{variant.unit || '-'}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Specifications Section */}
+                    {product.specifications && product.specifications.length > 0 && (
+                        <div className="rounded-lg border bg-card p-6 space-y-4">
+                            <h2 className="text-lg font-semibold">Spesifikasi Tambahan</h2>
+                            <div className="rounded-md border">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-1/3">Key</TableHead>
+                                            <TableHead>Value</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {product.specifications.map((spec: any) => (
+                                            <TableRow key={spec.id}>
+                                                <TableCell className="font-medium bg-muted/30">{spec.key}</TableCell>
+                                                <TableCell>{spec.value}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </div>
+                    )}
+
                 </div>
             </div>
         </div>

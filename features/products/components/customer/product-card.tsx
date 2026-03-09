@@ -18,7 +18,7 @@ function toCartProduct(product: ProductListItem): CartProduct {
         id: product.id,
         name: product.name,
         slug: product.slug,
-        price: product.price,
+        minPrice: product.minPrice,
         description: product.description,
         pictures: product.pictures,
     };
@@ -34,9 +34,23 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
         [product.pictures]
     );
 
+    const hasVariants = product.variants && product.variants.length > 0;
+
     const formattedPrice = useMemo(
-        () => formatCurrency(product.price),
-        [product.price]
+        () => {
+            if (hasVariants) {
+                const varMin = Math.min(...product.variants!.map(v => v.price));
+                const varMax = Math.max(...product.variants!.map(v => v.price));
+                if (varMin !== varMax) return `${formatCurrency(varMin)} - ${formatCurrency(varMax)}`;
+                return formatCurrency(varMin);
+            }
+            if (product.minPrice !== null && product.maxPrice && product.maxPrice !== product.minPrice) {
+                return `${formatCurrency(product.minPrice)} - ${formatCurrency(product.maxPrice)}`;
+            }
+            if (product.minPrice !== null) return formatCurrency(product.minPrice);
+            return '-';
+        },
+        [product.minPrice, product.maxPrice, product.variants, hasVariants]
     );
 
     const handleAddToCart = useCallback(
@@ -114,31 +128,17 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
                 <div className="flex items-center justify-between pt-2 gap-3">
                     <div className="flex-1">
                         <p className="text-xs text-muted-foreground mb-0.5">Harga</p>
-                        <p className="text-lg font-bold text-foreground">
+                        <p className="text-base font-bold text-foreground">
                             {formattedPrice}
                         </p>
                     </div>
-
-                    <Button
-                        size="sm"
-                        className="h-10 px-4 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-95"
-                        onClick={handleAddToCart}
-                        disabled={isPending}
-                        aria-label={`Tambah ${product.name} ke keranjang`}
-                    >
-                        {isPending ? (
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                        ) : (
-                            <ShoppingCart className="h-4 w-4" />
-                        )}
-                    </Button>
                 </div>
             </div>
         </div>
     );
 }, (prevProps, nextProps) => {
-    // ✅ Custom comparison untuk memo
     return prevProps.product.id === nextProps.product.id &&
-        prevProps.product.price === nextProps.product.price &&
+        prevProps.product.minPrice === nextProps.product.minPrice &&
+        prevProps.product.maxPrice === nextProps.product.maxPrice &&
         prevProps.product.name === nextProps.product.name;
 });

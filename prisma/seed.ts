@@ -66,7 +66,8 @@ async function main() {
         name: 'Spanduk Flexi Indoor',
         description:
           'Cetak spanduk bahan flexi indoor 280gsm. Harga per meter persegi.',
-        price: 25000,
+        minPrice: 25000,
+        maxPrice: 25000,
         slug: 'spanduk-flexi-indoor',
         categoryId: categories[0].id,
       },
@@ -78,7 +79,8 @@ async function main() {
         name: 'Kartu Nama Art Carton (100 pcs)',
         description:
           'Kartu nama art carton 260gsm finishing glossy/matte, ukuran 9x5.5cm.',
-        price: 35000,
+        minPrice: 35000,
+        maxPrice: 35000,
         slug: 'kartu-nama-100pcs',
         categoryId: categories[1].id,
       },
@@ -89,7 +91,8 @@ async function main() {
       create: {
         name: 'Flyer A5 (100 pcs)',
         description: 'Cetak flyer A5 art paper 150gsm full color dua sisi.',
-        price: 55000,
+        minPrice: 55000,
+        maxPrice: 55000,
         slug: 'flyer-a5-100pcs',
         categoryId: categories[2].id,
       },
@@ -135,11 +138,11 @@ async function main() {
     data: {
       userId: user.id,
       status: 'PAID',
-      total: products[0].price + products[1].price,
+      total: (products[0].minPrice ?? 0) + (products[1].minPrice ?? 0),
       items: {
         create: [
-          { productId: products[0].id, quantity: 1, price: products[0].price },
-          { productId: products[1].id, quantity: 1, price: products[1].price },
+          { productId: products[0].id, quantity: 1, price: products[0].minPrice ?? 0 },
+          { productId: products[1].id, quantity: 1, price: products[1].minPrice ?? 0 },
         ],
       },
     },

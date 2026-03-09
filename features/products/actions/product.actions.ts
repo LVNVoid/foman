@@ -26,9 +26,31 @@ export async function getProduct(id: string) {
 
 export async function createProduct(formData: FormData) {
   const data = Object.fromEntries(formData.entries());
+  
   const files = formData.getAll("images") as File[];
   
-  const parsed = createProductSchema.safeParse({ ...data, images: files });
+  let variants = [];
+  let specifications = [];
+  
+  try {
+    if (data.variantsData) {
+      variants = JSON.parse(data.variantsData as string);
+    }
+    if (data.specificationsData) {
+      specifications = JSON.parse(data.specificationsData as string);
+    }
+  } catch (e) {
+    console.error("Failed to parse variants or specifications JSON", e);
+    return { error: { form: ["Data varian atau spesifikasi tidak valid"] } };
+  }
+  
+  const parsed = createProductSchema.safeParse({ 
+    ...data, 
+    images: files,
+    variants,
+    specifications
+  });
+  
   if (!parsed.success) {
     return { error: parsed.error.flatten().fieldErrors };
   }
@@ -50,14 +72,40 @@ export async function updateProduct(id: string, formData: FormData) {
   const files = formData.getAll("images") as File[];
   const deletedImageIds = formData.getAll("deletedImageIds") as string[];
   
-  const parsed = updateProductSchema.safeParse({ id, ...data, images: files, deletedImageIds });
+  // Parse dynamic array fields from JSON strings
+  let variants = [];
+  let specifications = [];
+  
+  try {
+    if (data.variantsData) {
+      variants = JSON.parse(data.variantsData as string);
+    }
+    if (data.specificationsData) {
+      specifications = JSON.parse(data.specificationsData as string);
+    }
+  } catch (e) {
+    console.error("Failed to parse variants or specifications JSON", e);
+    return { error: { form: ["Data varian atau spesifikasi tidak valid"] } };
+  }
+  
+  const parsed = updateProductSchema.safeParse({ 
+    id, 
+    ...data, 
+    images: files, 
+    deletedImageIds,
+    variants,
+    specifications
+  });
+  
   if (!parsed.success) {
+    console.error("Validation failed for updateProduct:", parsed.error.flatten().fieldErrors);
     return { error: parsed.error.flatten().fieldErrors };
   }
 
   try {
     await updateProductService(parsed.data);
   } catch (error: any) {
+    console.error("Update product service error:", error);
     return { error: { form: [error.message || "Failed to update product"] } };
   }
 

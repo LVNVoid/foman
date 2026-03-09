@@ -1,5 +1,19 @@
 import { z } from "zod";
 
+export const productVariantSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, "Variant name is required"),
+  price: z.coerce.number().min(0, "Price must be a positive number"),
+  stock: z.coerce.number().min(0, "Stock must be 0 or greater").default(0),
+  unit: z.string().optional(),
+});
+
+export const productSpecificationSchema = z.object({
+  id: z.string().optional(),
+  key: z.string().min(1, "Specification key is required"),
+  value: z.string().min(1, "Specification value is required"),
+});
+
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
@@ -13,9 +27,12 @@ const fileSchema = z.custom<File>((val) => val instanceof File, "File expected")
 export const createProductSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   description: z.string().optional(),
-  price: z.coerce.number().min(0, "Price must be a positive number"),
+  minPrice: z.coerce.number().min(0, "Harga minimum wajib diisi"),
+  maxPrice: z.coerce.number().min(0).optional().nullable(),
   categoryId: z.string().optional(),
   images: z.array(z.custom<File>((val) => val instanceof File).optional()).optional(),
+  variants: z.array(productVariantSchema).optional(),
+  specifications: z.array(productSpecificationSchema).optional(),
 });
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;
@@ -25,7 +42,7 @@ export const updateProductSchema = createProductSchema.extend({
   deletedImageIds: z.array(z.string()).optional(),
 }).partial({
   name: true,
-  price: true,
+  minPrice: true,
 }).refine(data => data.id !== undefined, {
   message: "Product ID is required for updates",
   path: ["id"]

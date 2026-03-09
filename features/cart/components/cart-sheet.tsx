@@ -54,7 +54,7 @@ export function CartSheet() {
                             <div className="flex flex-col gap-4 py-4">
                                 {items.map((item) => (
                                     <div
-                                        key={item.product.id}
+                                        key={item.id}
                                         className="flex gap-4"
                                     >
                                         {/* Product Image */}
@@ -79,12 +79,19 @@ export function CartSheet() {
 
                                             {/* Name & Price */}
                                             <div className="flex justify-between gap-2">
-                                                <h3 className="font-medium line-clamp-2">
-                                                    {item.product.name}
-                                                </h3>
+                                                <div className="flex flex-col">
+                                                    <h3 className="font-medium line-clamp-2">
+                                                        {item.product.name}
+                                                    </h3>
+                                                    {item.product.selectedVariant && (
+                                                        <span className="text-sm text-muted-foreground mt-0.5">
+                                                            Varian: {item.product.selectedVariant.name}
+                                                        </span>
+                                                    )}
+                                                </div>
 
                                                 <p className="font-bold shrink-0">
-                                                    {formatCurrency(item.product.price * item.quantity)}
+                                                    {formatCurrency((item.product.selectedVariant?.price || item.product.minPrice || 0) * item.quantity)}
                                                 </p>
                                             </div>
 
@@ -97,7 +104,7 @@ export function CartSheet() {
                                                         size="icon"
                                                         className="h-8 w-8"
                                                         onClick={() => updateQuantity(
-                                                            item.product.id,
+                                                            item.id,
                                                             item.quantity - 1
                                                         )}
                                                     >
@@ -113,7 +120,7 @@ export function CartSheet() {
                                                         size="icon"
                                                         className="h-8 w-8"
                                                         onClick={() => updateQuantity(
-                                                            item.product.id,
+                                                            item.id,
                                                             item.quantity + 1
                                                         )}
                                                     >
@@ -126,7 +133,7 @@ export function CartSheet() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                                    onClick={() => removeItem(item.product.id)}
+                                                    onClick={() => removeItem(item.id)}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>

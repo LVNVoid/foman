@@ -23,7 +23,7 @@ export function ProductImageGallery({ images, productName, compact = false }: Pr
     // If no valid images, show placeholder
     if (validImages.length === 0) {
         return (
-            <div className={`relative ${compact ? 'aspect-[4/3] max-w-2xl mx-auto' : 'aspect-square'} w-full overflow-hidden rounded-lg bg-gray-100`}>
+            <div className={`relative ${compact ? 'aspect-[4/3] max-w-2xl mx-auto' : 'aspect-[4/3] max-h-[480px]'} w-full overflow-hidden rounded-lg bg-gray-100`}>
                 <div className="flex h-full items-center justify-center">
                     <span className="text-gray-400">No image available</span>
                 </div>
@@ -43,18 +43,15 @@ export function ProductImageGallery({ images, productName, compact = false }: Pr
 
     return (
         <div className="flex flex-col gap-4">
-            {/* Main Image */}
-            <div className={`relative ${compact ? 'aspect-[4/3] max-w-2xl mx-auto' : 'aspect-square'} w-full overflow-hidden rounded-lg bg-gray-100`}>
+            <div className={`relative ${compact ? 'aspect-[4/3] max-w-2xl mx-auto' : 'aspect-[4/3] max-h-[480px]'} w-full overflow-hidden rounded-lg bg-none`}>
                 <Image
                     src={currentImage.imageUrl || '/images/placeholder-image.jpg'}
                     alt={`${productName} - Gambar ${selectedIndex + 1}`}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                     priority={selectedIndex === 0}
                     sizes={compact ? "(max-width: 768px) 100vw, 672px" : "(max-width: 768px) 100vw, 50vw"}
                 />
-
-                {/* Navigation Arrows - Only show if more than 1 image */}
                 {validImages.length > 1 && (
                     <>
                         <button

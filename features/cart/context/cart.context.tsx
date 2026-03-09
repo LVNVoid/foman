@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { CartProduct } from '@/types/product';
 
 export interface CartItem {
+    id: string;
     product: CartProduct;
     quantity: number;
 }
@@ -11,8 +12,8 @@ export interface CartItem {
 interface CartContextType {
     items: CartItem[];
     addItem: (product: CartProduct) => void;
-    removeItem: (productId: string) => void;
-    updateQuantity: (productId: string, quantity: number) => void;
+    removeItem: (cartItemId: string) => void;
+    updateQuantity: (cartItemId: string, quantity: number) => void;
     clearCart: () => void;
     cartCount: number;
     cartTotal: number;
@@ -40,40 +41,48 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setIsInitialized(true);
     }, []);
 
-    // Save cart to local storage whenever it changes
     useEffect(() => {
         if (isInitialized) {
             localStorage.setItem('cart', JSON.stringify(items));
         }
     }, [items, isInitialized]);
 
+    // Generate unique ID for cart item
+    const getCartItemId = (product: CartProduct) => {
+        return product.selectedVariant
+            ? `${product.id}-${product.selectedVariant.id}`
+            : product.id;
+    };
+
     const addItem = (product: CartProduct) => {
+        const cartItemId = getCartItemId(product);
+
         setItems((prev) => {
-            const existing = prev.find((item) => item.product.id === product.id);
+            const existing = prev.find((item) => item.id === cartItemId);
             if (existing) {
                 return prev.map((item) =>
-                    item.product.id === product.id
+                    item.id === cartItemId
                         ? { ...item, quantity: item.quantity + 1 }
                         : item
                 );
             }
-            return [...prev, { product, quantity: 1 }];
+            return [...prev, { id: cartItemId, product, quantity: 1 }];
         });
-        setIsOpen(true); // Open cart when adding item
+        setIsOpen(true);
     };
 
-    const removeItem = (productId: string) => {
-        setItems((prev) => prev.filter((item) => item.product.id !== productId));
+    const removeItem = (cartItemId: string) => {
+        setItems((prev) => prev.filter((item) => item.id !== cartItemId));
     };
 
-    const updateQuantity = (productId: string, quantity: number) => {
+    const updateQuantity = (cartItemId: string, quantity: number) => {
         if (quantity < 1) {
-            removeItem(productId);
+            removeItem(cartItemId);
             return;
         }
         setItems((prev) =>
             prev.map((item) =>
-                item.product.id === productId ? { ...item, quantity } : item
+                item.id === cartItemId ? { ...item, quantity } : item
             )
         );
     };
@@ -84,7 +93,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     const cartCount = items.reduce((total, item) => total + item.quantity, 0);
     const cartTotal = items.reduce(
-        (total, item) => total + item.product.price * item.quantity,
+        (total, item) => total + (item.product.selectedVariant?.price || item.product.minPrice || 0) * item.quantity,
         0
     );
 

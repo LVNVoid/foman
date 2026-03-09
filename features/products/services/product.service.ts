@@ -39,7 +39,8 @@ export async function getProductsService({
         name: true,
         slug: true,
         description: true,
-        price: true,
+        minPrice: true,
+        maxPrice: true,
         createdAt: true,
         updatedAt: true,
         categoryId: true,
@@ -55,6 +56,24 @@ export async function getProductsService({
             imageUrl: true,
             imagePublicId: true,
           },
+        },
+        variants: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            stock: true,
+            unit: true,
+          },
+          orderBy: { name: 'asc' },
+        },
+        specifications: {
+          select: {
+            id: true,
+            key: true,
+            value: true,
+          },
+          orderBy: { key: 'asc' },
         },
       },
       skip,
@@ -79,7 +98,8 @@ export async function getProductService(id: string) {
       name: true,
       slug: true,
       description: true,
-      price: true,
+      minPrice: true,
+      maxPrice: true,
       categoryId: true,
       createdAt: true,
       updatedAt: true,
@@ -95,6 +115,24 @@ export async function getProductService(id: string) {
           imageUrl: true,
           imagePublicId: true,
         },
+      },
+      variants: {
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          stock: true,
+          unit: true,
+        },
+        orderBy: { name: 'asc' },
+      },
+      specifications: {
+        select: {
+          id: true,
+          key: true,
+          value: true,
+        },
+        orderBy: { key: 'asc' },
       },
     },
   });
@@ -108,7 +146,8 @@ export async function getProductBySlugService(slug: string) {
       name: true,
       slug: true,
       description: true,
-      price: true,
+      minPrice: true,
+      maxPrice: true,
       categoryId: true,
       createdAt: true,
       updatedAt: true,
@@ -124,6 +163,24 @@ export async function getProductBySlugService(slug: string) {
           imageUrl: true,
           imagePublicId: true,
         },
+      },
+      variants: {
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          stock: true,
+          unit: true,
+        },
+        orderBy: { name: 'asc' },
+      },
+      specifications: {
+        select: {
+          id: true,
+          key: true,
+          value: true,
+        },
+        orderBy: { key: 'asc' },
       },
     },
   });
@@ -189,19 +246,38 @@ export async function createProductService(data: CreateProductInput) {
 
   const slug = await generateUniqueSlug(data.name);
 
-  const product = await prisma.product.create({
-    data: {
-      name: data.name,
-      slug,
-      description: data.description,
-      price: data.price,
-      categoryId: data.categoryId || null,
-      pictures: {
-        create: uploadedImages,
-      },
+  const productCreateInput: any = {
+    name: data.name,
+    slug,
+    description: data.description,
+    minPrice: data.minPrice ?? null,
+    maxPrice: data.maxPrice ?? null,
+    categoryId: data.categoryId || null,
+    pictures: {
+      create: uploadedImages,
     },
-    select: { id: true },
-  });
+    variants: data.variants && data.variants.length > 0 ? {
+      create: data.variants.map(v => ({
+        name: v.name,
+        price: v.price,
+        stock: v.stock,
+        unit: v.unit || null,
+      }))
+    } : undefined,
+    specifications: data.specifications && data.specifications.length > 0 ? {
+      create: data.specifications.map(s => ({
+        key: s.key,
+        value: s.value,
+      }))
+    } : undefined,
+  };
+
+  const [product] = await prisma.$transaction([
+    prisma.product.create({
+      data: productCreateInput,
+      select: { id: true },
+    })
+  ]);
 
   return product;
 }
@@ -231,28 +307,19 @@ export async function updateProductService(data: UpdateProductInput) {
         }
       }
     }
-
-    await prisma.productPicture.deleteMany({
-      where: {
-        id: { in: data.deletedImageIds },
-        productId: id,
-      },
-    });
   }
 
-  // Handle new image uploads
+  // Identify new image uploads (external Cloudinary call)
+  const newUploadedPictures = [];
   if (data.images && data.images.length > 0) {
     for (const file of data.images) {
       if (file && file.size > 0) {
         try {
           const uploaded = await uploadImage(file);
-          
-          await prisma.productPicture.create({
-            data: {
-              productId: id,
-              imageUrl: uploaded.secure_url,
-              imagePublicId: uploaded.public_id,
-            },
+          newUploadedPictures.push({
+            productId: id,
+            imageUrl: uploaded.secure_url,
+            imagePublicId: uploaded.public_id,
           });
         } catch (error) {
           console.error(`Image upload failed for ${file.name}:`, error);
@@ -262,19 +329,70 @@ export async function updateProductService(data: UpdateProductInput) {
     }
   }
 
+  // Build Transaction Array
+  const transactionOperations = [];
+
+  // 1. Delete DB rows for old images
+  if (data.deletedImageIds && data.deletedImageIds.length > 0) {
+    transactionOperations.push(
+      prisma.productPicture.deleteMany({
+        where: {
+          id: { in: data.deletedImageIds },
+          productId: id,
+        },
+      })
+    );
+  }
+
+  // 2. Create DB rows for new images
+  if (newUploadedPictures.length > 0) {
+    transactionOperations.push(
+      prisma.productPicture.createMany({
+        data: newUploadedPictures,
+      })
+    );
+  }
+
+  // 3. Update core product stats, replacing variants/specs atomically
   const updateData: any = {};
   if (data.name !== undefined) updateData.name = data.name;
   if (data.description !== undefined) updateData.description = data.description;
-  if (data.price !== undefined) updateData.price = data.price;
+  if (data.minPrice !== undefined) updateData.minPrice = data.minPrice ?? null;
+  if (data.maxPrice !== undefined) updateData.maxPrice = data.maxPrice ?? null;
   if (data.categoryId !== undefined) updateData.categoryId = data.categoryId || null;
 
-  const product = await prisma.product.update({
-    where: { id },
-    data: updateData,
-    select: { id: true },
-  });
+  if (data.variants !== undefined) {
+    updateData.variants = {
+      deleteMany: {},
+      create: data.variants.map(v => ({
+        name: v.name,
+        price: v.price,
+        stock: v.stock,
+        unit: v.unit || null,
+      })),
+    };
+  }
+  
+  if (data.specifications !== undefined) {
+    updateData.specifications = {
+      deleteMany: {},
+      create: data.specifications.map(s => ({
+        key: s.key,
+        value: s.value,
+      })),
+    };
+  }
 
-  return product;
+  transactionOperations.push(
+    prisma.product.update({
+      where: { id },
+      data: updateData,
+      select: { id: true },
+    })
+  );
+
+  const results = await prisma.$transaction(transactionOperations);
+  return results[results.length - 1]; // Return the product
 }
 
 export async function deleteProductService(id: string) {

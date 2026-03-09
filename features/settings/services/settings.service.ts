@@ -30,7 +30,7 @@ export async function getStoreSettingsService() {
   if (!settings) {
     const created = await prisma.storeSettings.create({
       data: {
-        storeName: "Foman Printing",
+        storeName: "Foman Kreasi",
       },
       select: {
         id: true,

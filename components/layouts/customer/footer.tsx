@@ -11,7 +11,7 @@ export function Footer() {
                             <div className="bg-primary/10 p-2 rounded-lg group-hover:bg-primary/20 transition-colors">
                                 <Printer className="h-6 w-6 text-primary" />
                             </div>
-                            <span className="text-xl font-bold tracking-tight">Foman Printing</span>
+                            <span className="text-xl font-bold tracking-tight">Foman Kreasi</span>
                         </Link>
                         <p className="text-sm text-muted-foreground leading-relaxed">
                             Solusi satu pintu untuk semua kebutuhan percetakan berkualitas tinggi Anda.
@@ -50,7 +50,7 @@ export function Footer() {
                             </li>
                             <li className="flex items-center gap-2">
                                 <Mail className="h-4 w-4" />
-                                <span>hello@printmaster.com</span>
+                                <span>hello@foman.com</span>
                             </li>
                         </ul>
                         <div className="flex gap-4 mt-4">
@@ -68,7 +68,7 @@ export function Footer() {
                 </div>
 
                 <div className="border-t mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-                    <p>© {new Date().getFullYear()} PrintMaster. Hak cipta dilindungi.</p>
+                    <p>© {new Date().getFullYear()} Foman Kreasi. Hak cipta dilindungi.</p>
                     <div className="flex gap-6">
                         <Link href="/privacy" className="hover:text-primary">Kebijakan Privasi</Link>
                         <Link href="/terms" className="hover:text-primary">Syarat & Ketentuan</Link>

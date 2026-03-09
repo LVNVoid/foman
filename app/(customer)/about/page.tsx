@@ -8,7 +8,7 @@ import { siteConfig } from '@/lib/seo';
 export const metadata: Metadata = {
     title: 'Tentang Kami | Foman Percetakan',
     description: 'Pelajari lebih lanjut tentang Foman Percetakan. Kami adalah mitra percetakan terpercaya sejak bertahun-tahun dengan teknologi modern dan tim ahli profesional.',
-    keywords: ['tentang foman percetakan', 'profil percetakan', 'sejarah foman printing', 'layanan cetak terbaik'],
+    keywords: ['tentang foman percetakan', 'profil percetakan', 'sejarah foman kreasi', 'layanan cetak terbaik'],
     alternates: {
         canonical: `${siteConfig.baseUrl}/about`,
     },
@@ -25,7 +25,7 @@ export default function AboutPage() {
     return (
         <div className="flex flex-col">
             <div className="container pt-10">
-                <h1 className="text-3xl font-bold mb-4">Tentang Foman Printing</h1>
+                <h1 className="text-3xl font-bold mb-4">Tentang Foman Kreasi</h1>
                 <p className="text-muted-foreground text-md md:text-lg">
                     Mitra percetakan terpercaya Anda untuk segala kebutuhan bisnis dan personal. Kualitas terbaik, harga bersaing.
                 </p>
@@ -37,7 +37,7 @@ export default function AboutPage() {
                         <div className="space-y-4">
                             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Tentang Kami</h2>
                             <p className="text-muted-foreground text-md md:text-lg leading-relaxed">
-                                Foman Printing didirikan dengan visi sederhana: membuat layanan percetakan berkualitas tinggi dapat diakses oleh semua orang. Bermula dari sebuah toko kecil di pusat kota, kami kini telah berkembang menjadi salah satu penyedia layanan percetakan digital terdepan.
+                                Foman Kreasi didirikan dengan visi sederhana: membuat layanan percetakan berkualitas tinggi dapat diakses oleh semua orang. Bermula dari sebuah toko kecil di pusat kota, kami kini telah berkembang menjadi salah satu penyedia layanan percetakan digital terdepan.
                             </p>
                             <p className="text-muted-foreground text-md md:text-lg leading-relaxed">
                                 Kami menggabungkan teknologi percetakan terbaru dengan keahlian tim yang berdedikasi untuk menghasilkan produk yang tidak hanya memenuhi, tetapi melampaui ekspektasi pelanggan kami.

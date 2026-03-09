@@ -112,23 +112,6 @@ export default async function OrderDetailPage(props: PageProps) {
                 <div className="space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Informasi Pengiriman</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-start gap-4">
-                                <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                                <div>
-                                    <p className="font-medium">{session.user.name}</p>
-                                    <p className="text-sm text-muted-foreground">{session.user.email}</p>
-                                    {/* Ideally address should be stored in Order model, using User as fallback for now if not stored */}
-                                    {/* <p className="text-sm text-muted-foreground mt-2">Jl. Contoh Alamat No. 123, Jakarta Selatan, DKI Jakarta 12345</p> */}
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
                             <CardTitle className="text-base">Butuh Bantuan?</CardTitle>
                         </CardHeader>
                         <CardContent>

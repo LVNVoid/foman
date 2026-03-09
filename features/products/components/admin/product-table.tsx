@@ -17,10 +17,12 @@ import {
 interface Product {
     id: string;
     name: string;
-    price: number;
+    minPrice: number | null;
+    maxPrice: number | null;
     description: string | null;
     category: { name: string } | null;
     pictures: { imageUrl: string | null }[];
+    variants?: { price: number }[];
 }
 
 interface ProductTableProps {
@@ -84,7 +86,19 @@ export function ProductTable({ products, totalPages, currentPage }: ProductTable
                                         <td className="p-4 align-middle font-medium">{product.name}</td>
                                         <td className="p-4 align-middle">{product.category?.name || '-'}</td>
                                         <td className="p-4 align-middle">
-                                            {formatCurrency(product.price)}
+                                            {(() => {
+                                                const variants = product.variants;
+                                                if (variants && variants.length > 0) {
+                                                    const varMin = Math.min(...variants.map(v => v.price));
+                                                    const varMax = Math.max(...variants.map(v => v.price));
+                                                    if (varMin !== varMax) return `${formatCurrency(varMin)} - ${formatCurrency(varMax)}`;
+                                                    return formatCurrency(varMin);
+                                                }
+                                                if (product.minPrice !== null && product.maxPrice && product.maxPrice !== product.minPrice)
+                                                    return `${formatCurrency(product.minPrice)} - ${formatCurrency(product.maxPrice)}`;
+                                                if (product.minPrice !== null) return formatCurrency(product.minPrice);
+                                                return '-';
+                                            })()}
                                         </td>
                                         <td className="p-4 align-middle max-w-xs truncate">{product.description}</td>
                                         <td className="p-4 align-middle text-right">

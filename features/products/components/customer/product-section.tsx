@@ -48,7 +48,8 @@ const getCachedProducts = unstable_cache(
                     name: true,
                     slug: true,
                     description: true,
-                    price: true,
+                    minPrice: true,
+                    maxPrice: true,
                     pictures: {
                         select: {
                             id: true,
@@ -64,6 +65,16 @@ const getCachedProducts = unstable_cache(
                             slug: true,
                         }
                     },
+                    variants: {
+                        select: {
+                            id: true,
+                            name: true,
+                            price: true,
+                            stock: true,
+                            unit: true,
+                        },
+                        orderBy: { price: 'asc' },
+                    },
                 },
             }),
             prisma.product.count({ where })
@@ -71,7 +82,6 @@ const getCachedProducts = unstable_cache(
 
         const serializedProducts = products.map(product => ({
             ...product,
-            price: Number(product.price),
         }));
 
         return [serializedProducts, count] as const;

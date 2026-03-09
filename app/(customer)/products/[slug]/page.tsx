@@ -2,7 +2,9 @@ import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { AddToCartButton } from '@/features/cart/components/add-to-cart-button';
+import { ProductOptions } from '@/features/products/components/customer/product-options';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
 import { ProductImageGallery } from '@/features/products/components/customer/product-image-gallery';
@@ -31,7 +33,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
         where: { slug },
         include: {
             pictures: true,
-            category: true
+            category: true,
+            variants: true,
+            specifications: true
         },
     });
 
@@ -47,18 +51,19 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
     const seoDescription = product.description
         ? `${product.description.substring(0, 150)}${product.description.length > 150 ? '...' : ''}`
-        : `Pesan ${product.name} berkualitas tinggi dari Foman Percetakan. Harga ${formatCurrency(product.price)}.`;
+        : `Pesan ${product.name} berkualitas tinggi dari Foman Percetakan.`;
 
     const keywords = [
         product.name,
         `cetak ${product.name}`,
         `jasa ${product.name}`,
+        ...product.variants.map(v => v.name),
         product.category?.name || 'percetakan',
         'Foman', 'percetakan', 'printing', 'cetak online', 'cetak murah', 'cetak berkualitas'
     ];
 
     return {
-        title: `${product.name} - ${formatCurrency(product.price)}`,
+        title: `${product.name} - Foman Percetakan`,
         description: seoDescription,
         keywords,
 
@@ -87,10 +92,10 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
         twitter: {
             card: 'summary_large_image',
-            title: `${product.name} - ${formatCurrency(product.price)}`,
+            title: `${product.name} - Foman Kreasi`,
             description: seoDescription,
             images: [primaryImage],
-            creator: '@fomanpercetakan',
+            creator: '@fomankreasi',
         },
 
         alternates: { canonical: productUrl },
@@ -111,7 +116,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
     const product = await prisma.product.findUnique({
         where: { slug },
-        include: { pictures: true, category: true },
+        include: {
+            pictures: true,
+            category: true,
+            variants: {
+                orderBy: { price: 'asc' }
+            },
+            specifications: true
+        },
     });
 
 
@@ -129,7 +141,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                                 '@type': 'Product',
                                 name: product.name,
                                 description: product.description,
-                                image: product.pictures.map((p) => p.imageUrl),
+                                image: product.pictures.map((p) => p.imageUrl).filter(Boolean),
                                 sku: product.id,
                                 brand: {
                                     '@type': 'Brand',
@@ -137,14 +149,50 @@ export default async function ProductPage({ params }: ProductPageProps) {
                                 },
                                 offers: {
                                     '@type': 'Offer',
-                                    price: product.price,
+                                    price: Number(product.minPrice) || 0,
                                     priceCurrency: 'IDR',
                                     availability: 'https://schema.org/InStock',
                                     url: `${siteConfig.baseUrl}/products/${product.slug}`,
+                                    priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
                                     seller: {
                                         '@type': 'Organization',
                                         name: 'Foman Percetakan'
-                                    }
+                                    },
+                                    shippingDetails: {
+                                        '@type': 'OfferShippingDetails',
+                                        shippingRate: {
+                                            '@type': 'MonetaryAmount',
+                                            value: '0',
+                                            currency: 'IDR',
+                                        },
+                                        shippingDestination: {
+                                            '@type': 'DefinedRegion',
+                                            addressCountry: 'ID',
+                                        },
+                                        deliveryTime: {
+                                            '@type': 'ShippingDeliveryTime',
+                                            handlingTime: {
+                                                '@type': 'QuantitativeValue',
+                                                minValue: 1,
+                                                maxValue: 3,
+                                                unitCode: 'DAY',
+                                            },
+                                            transitTime: {
+                                                '@type': 'QuantitativeValue',
+                                                minValue: 1,
+                                                maxValue: 5,
+                                                unitCode: 'DAY',
+                                            },
+                                        },
+                                    },
+                                    hasMerchantReturnPolicy: {
+                                        '@type': 'MerchantReturnPolicy',
+                                        applicableCountry: 'ID',
+                                        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                                        merchantReturnDays: 7,
+                                        returnMethod: 'https://schema.org/ReturnByMail',
+                                        returnFees: 'https://schema.org/FreeReturn',
+                                    },
                                 },
                             },
                             {
@@ -212,35 +260,72 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <ProductImageGallery images={product.pictures} productName={product.name} />
 
 
-                {/* Product Info */}
                 <div className="flex flex-col gap-6 md:gap-8">
-
-                    {/* Category + Title */}
                     <div>
                         {product.category && (
-                            <div className="text-sm sm:text-base text-muted-foreground mb-1">
+                            <div className="text-sm sm:text-base md:text-base text-muted-foreground mb-1">
                                 {product.category.name}
                             </div>
                         )}
-
-                        <h1 className="font-bold text-[clamp(1.6rem,4vw,3rem)] leading-tight">
+                        <h1 className="font-bold text-[clamp(1.6rem,4vw,2rem)] leading-tight">
                             {product.name}
                         </h1>
                     </div>
 
-                    {/* Price */}
-                    <div className="font-bold text-primary text-xl sm:text-2xl md:text-3xl">
-                        {formatCurrency(product.price)}
-                    </div>
+                    {/* Varian, Harga & Add to Cart via ProductOptions */}
+                    <ProductOptions product={product} />
 
-                    {/* Description */}
-                    <div className="prose prose-sm sm:prose-base md:prose-lg max-w-none text-muted-foreground">
-                        <p>{product.description}</p>
-                    </div>
-
-                    {/* Add to Cart */}
-                    <div className="mt-auto pt-4">
-                        <AddToCartButton product={product} />
+                    {/* Details Tabs */}
+                    <div className="pt-8 border-t">
+                        <Tabs defaultValue="description" className="w-full">
+                            <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent space-x-6 overflow-x-auto">
+                                <TabsTrigger
+                                    value="description"
+                                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none data-[state=active]:bg-transparent px-0 py-3 font-semibold"
+                                >
+                                    Deskripsi
+                                </TabsTrigger>
+                                {product.specifications && product.specifications.length > 0 && (
+                                    <TabsTrigger
+                                        value="specifications"
+                                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none data-[state=active]:bg-transparent px-0 py-3 font-semibold"
+                                    >
+                                        Spesifikasi
+                                    </TabsTrigger>
+                                )}
+                            </TabsList>
+                            <TabsContent value="description" className="pt-6">
+                                <div className="prose prose-sm md:prose-base max-w-none text-muted-foreground">
+                                    {product.description ? (
+                                        product.description.split('\n').map((line, i) => (
+                                            <p key={i} className="mb-2">{line}</p>
+                                        ))
+                                    ) : (
+                                        <p>Tidak ada deskripsi tersedia.</p>
+                                    )}
+                                </div>
+                            </TabsContent>
+                            {product.specifications && product.specifications.length > 0 && (
+                                <TabsContent value="specifications" className="pt-6">
+                                    <div className="overflow-hidden rounded-md border">
+                                        <table className="w-full text-sm text-left">
+                                            <tbody className="divide-y">
+                                                {product.specifications.map((spec) => (
+                                                    <tr key={spec.id} className="divide-x bg-muted/20">
+                                                        <th className="px-4 py-3 font-medium text-muted-foreground w-1/3 bg-muted/50">
+                                                            {spec.key}
+                                                        </th>
+                                                        <td className="px-4 py-3 font-medium">
+                                                            {spec.value}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </TabsContent>
+                            )}
+                        </Tabs>
                     </div>
 
                 </div>

@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
         title: `Hubungi Kami | ${storeName}`,
         description: `Hubungi ${storeName} untuk pertanyaan tentang layanan, produk cetak, atau pesanan khusus Anda. Kami siap melayani di ${settings?.contactAddress || 'Jakarta'}.`,
-        keywords: ['hubungi foman percetakan', 'kontak percetakan', 'alamat foman printing', 'nomor telepon foman percetakan', 'customer service cetak'],
+        keywords: ['hubungi foman percetakan', 'kontak percetakan', 'alamat foman kreasi', 'nomor telepon foman kreasi', 'customer service cetak'],
         alternates: {
             canonical: `${siteConfig.baseUrl}/contact`,
         },

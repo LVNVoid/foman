@@ -13,6 +13,7 @@ export async function FeaturedProducts() {
         include: {
             pictures: true,
             category: true,
+            variants: true,
         },
     });
 

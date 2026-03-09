@@ -69,7 +69,7 @@ export async function generateMetadata(props: ProductsPageProps): Promise<Metada
     if (search) canonicalParams.set('search', search);
     const canonicalUrl = `${baseUrl}${canonicalParams.toString() ? `?${canonicalParams.toString()}` : ''}`;
 
-    const defaultOgImage = '/og-products-foman.jpg';
+    const defaultOgImage = '/og-image-foman.jpg';
 
     return {
         title: title,

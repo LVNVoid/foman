@@ -7,34 +7,34 @@ import { ProductSkeleton } from '@/components/skeletons/ProductSkeleton';
 import { siteConfig } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'Foman Percetakan - Jasa Cetak Profesional Indonesia',
+  title: 'Foman Kreasi - Jasa Cetak Profesional Indonesia',
   description:
-    'Foman Percetakan menawarkan layanan cetak berkualitas tinggi: offset, digital printing, dan large format printing untuk kebutuhan bisnis maupun personal.',
+    'Foman Kreasi menawarkan layanan cetak berkualitas tinggi: offset, digital printing, dan large format printing untuk kebutuhan bisnis maupun personal.',
   alternates: {
     canonical: siteConfig.baseUrl,
   },
   openGraph: {
-    title: 'Foman Percetakan - Jasa Cetak Profesional Indonesia',
+    title: 'Foman Kreasi - Jasa Cetak Profesional Indonesia',
     description:
       'Percetakan modern dengan teknologi terkini. Hasil berkualitas, harga kompetitif.',
     url: siteConfig.baseUrl,
-    siteName: 'Foman Percetakan',
+    siteName: 'Foman Kreasi',
     images: [
       {
-        url: '/og-products-foman.jpg',
+        url: '/og-image-foman.jpg',
         width: 1200,
         height: 630,
-        alt: 'Foman Percetakan',
+        alt: 'Foman Kreasi',
       },
     ],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Foman Percetakan - Jasa Cetak Profesional Indonesia',
+    title: 'Foman Kreasi - Jasa Cetak Profesional Indonesia',
     description:
       'Percetakan modern dengan teknologi terkini. Hasil berkualitas, harga kompetitif.',
-    images: ['/og-products-foman.jpg'],
+    images: ['/og-image-foman.jpg'],
   },
 };
 
