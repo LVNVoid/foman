@@ -14,7 +14,8 @@ export const getCachedCategory = unstable_cache(
         name: true,
         slug: true,
       },
-    });
+    },
+    );
   },
   ["category-detail"],
   { revalidate: 3600, tags: ["categories"] }

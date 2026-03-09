@@ -44,7 +44,6 @@ export function CategoryDialog({ category, open: controlledOpen, onOpenChange: c
     const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
     const [isDeletingImage, setIsDeletingImage] = useState(false);
 
-    // Use controlled state if provided, otherwise local state
     const isOpen = controlledOpen !== undefined ? controlledOpen : open;
 
     useEffect(() => {
@@ -59,7 +58,6 @@ export function CategoryDialog({ category, open: controlledOpen, onOpenChange: c
 
     const onOpenChange = controlledOnOpenChange || setOpen;
 
-    // Wrap action to handle FormData manipulation if needed
     const actionWithImage = async (prevState: any, formData: FormData) => {
         if (selectedFile) {
             formData.set('image', selectedFile.file);
@@ -169,7 +167,7 @@ export function CategoryDialog({ category, open: controlledOpen, onOpenChange: c
                                                     file,
                                                     url: URL.createObjectURL(file)
                                                 });
-                                                setIsDeletingImage(false); // If we select new, we are effectively keeping an image (the new one)
+                                                setIsDeletingImage(false);
                                             }
                                         }}
                                     />

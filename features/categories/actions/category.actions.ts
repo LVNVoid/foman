@@ -15,9 +15,10 @@ export async function getCategories() {
 
 export async function createCategory(prevState: any, formData: FormData) {
   const data = Object.fromEntries(formData.entries());
-  const imageFile = formData.get("image") as File;
+  const imageFile = formData.get("image") as File | null;
+  const imageToPass = imageFile && imageFile.size > 0 ? imageFile : undefined;
   
-  const parsed = createCategorySchema.safeParse({ ...data, image: imageFile });
+  const parsed = createCategorySchema.safeParse({ ...data, image: imageToPass });
   if (!parsed.success) {
     return { error: parsed.error.flatten().fieldErrors };
   }
@@ -34,10 +35,11 @@ export async function createCategory(prevState: any, formData: FormData) {
 
 export async function updateCategory(id: string, prevState: any, formData: FormData) {
   const data = Object.fromEntries(formData.entries());
-  const imageFile = formData.get("image") as File;
+  const imageFile = formData.get("image") as File | null;
+  const imageToPass = imageFile && imageFile.size > 0 ? imageFile : undefined;
   const deleteImage = formData.get("deleteImage") === "true";
   
-  const parsed = updateCategorySchema.safeParse({ id, ...data, image: imageFile, deleteImage });
+  const parsed = updateCategorySchema.safeParse({ id, ...data, image: imageToPass, deleteImage });
   if (!parsed.success) {
     return { error: parsed.error.flatten().fieldErrors };
   }
