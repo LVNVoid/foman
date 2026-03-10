@@ -115,7 +115,6 @@ export async function generateMetadata(props: ProductsPageProps): Promise<Metada
             }),
         },
 
-        // Other metadata
         ...(category && { category: category.name }),
     };
 }

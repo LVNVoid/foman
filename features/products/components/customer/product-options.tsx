@@ -1,6 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { ProductWithDetails } from '@/types/product';
 import { formatCurrency } from '@/lib/utils';
 import { AddToCartButton } from '@/features/cart/components/add-to-cart-button';
@@ -8,10 +7,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useProductVariants } from '@/features/products/hooks/useProductVariants';
 
-const ProductSpecifications = dynamic(
-    () => import('./product-specifications'),
-    { loading: () => <div className="h-20 animate-pulse bg-muted rounded-md mt-4" /> }
-);
+
 
 export function ProductOptions({ product }: { product: ProductWithDetails }) {
     const {
@@ -97,10 +93,7 @@ export function ProductOptions({ product }: { product: ProductWithDetails }) {
                 </div>
             )}
 
-            {/* Specifications Lazy Component */}
-            {product.specifications && product.specifications.length > 0 && (
-                <ProductSpecifications specifications={product.specifications} />
-            )}
+
 
             {/* Add to Cart */}
             <div className="pt-6">
