@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
         };
     }
 
-    const primaryImage = product.pictures[0]?.imageUrl || '/placeholder-image.jpg';
+    const primaryImage = product.pictures[0]?.imageUrl || '/images/placeholder-image.png';
     const productUrl = `${siteConfig.baseUrl}/products/${slug}`;
 
     const seoDescription = product.description

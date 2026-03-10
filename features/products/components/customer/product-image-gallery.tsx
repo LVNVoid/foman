@@ -45,12 +45,13 @@ export function ProductImageGallery({ images, productName, compact = false }: Pr
         <div className="flex flex-col gap-4">
             <div className={`relative ${compact ? 'aspect-[4/3] max-w-2xl mx-auto' : 'aspect-[4/3] max-h-[480px]'} w-full overflow-hidden rounded-lg bg-none`}>
                 <Image
-                    src={currentImage.imageUrl || '/images/placeholder-image.jpg'}
+                    src={currentImage.imageUrl || '/images/placeholder-image.png'}
                     alt={`${productName} - Gambar ${selectedIndex + 1}`}
                     fill
                     className="object-contain"
                     priority={selectedIndex === 0}
                     sizes={compact ? "(max-width: 768px) 100vw, 672px" : "(max-width: 768px) 100vw, 50vw"}
+                    unoptimized={!!currentImage.imageUrl && currentImage.imageUrl.includes('cloudinary')}
                 />
                 {validImages.length > 1 && (
                     <>
@@ -92,11 +93,12 @@ export function ProductImageGallery({ images, productName, compact = false }: Pr
                                 }`}
                         >
                             <Image
-                                src={image.imageUrl || '/images/placeholder-image.jpg'}
+                                src={image.imageUrl || '/images/placeholder-image.png'}
                                 alt={`${productName} - Thumbnail ${index + 1}`}
                                 fill
                                 className="object-cover"
                                 sizes="(max-width: 640px) 25vw, 12vw"
+                                unoptimized={!!image.imageUrl && image.imageUrl.includes('cloudinary')}
                             />
                         </button>
                     ))}
