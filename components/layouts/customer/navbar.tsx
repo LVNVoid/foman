@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/layouts/customer/search-input';
 import { ModeToggle } from '@/components/mode-toggle';
-import { Menu, Printer, Search, ShoppingCart, User } from 'lucide-react';
+import { Menu, Printer, Search, User } from 'lucide-react';
 import { NotificationBell } from '@/features/notifications/components/notification-bell';
 import { useState, useEffect, Suspense } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -19,7 +19,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { useCart } from '@/features/cart/context/cart.context';
 import Image from 'next/image';
 
 export function Navbar({ storeName }: { storeName?: string }) {
@@ -27,11 +26,9 @@ export function Navbar({ storeName }: { storeName?: string }) {
     const [mounted, setMounted] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
     const { data: session } = useSession();
-    const { cartCount, setIsOpen: setCartOpen, clearCart } = useCart();
     const pathname = usePathname();
 
     const handleLogout = () => {
-        clearCart();
         signOut();
     };
 
@@ -107,22 +104,6 @@ export function Navbar({ storeName }: { storeName?: string }) {
                             <ModeToggle />
                         </div>
 
-                        {/* Cart Button */}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="relative h-8 w-8 sm:h-10 sm:w-10"
-                            onClick={() => setCartOpen(true)}
-                        >
-                            <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
-                            {cartCount > 0 && (
-                                <span className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-primary text-[9px] sm:text-[10px] font-bold text-primary-foreground flex items-center justify-center">
-                                    {cartCount > 99 ? '99+' : cartCount}
-                                </span>
-                            )}
-                            <span className="sr-only">Keranjang</span>
-                        </Button>
-
                         {/* Desktop User Menu */}
                         <div className="hidden lg:flex items-center gap-2">
                             {!mounted ? (
@@ -172,11 +153,6 @@ export function Navbar({ storeName }: { storeName?: string }) {
                                             </Link>
                                         </DropdownMenuItem>
 
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/orders" className="cursor-pointer">
-                                                Pesanan Saya
-                                            </Link>
-                                        </DropdownMenuItem>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
                                             Keluar
@@ -276,13 +252,6 @@ export function Navbar({ storeName }: { storeName?: string }) {
                                                             Dashboard Admin
                                                         </Link>
                                                     )}
-                                                    <Link
-                                                        href="/orders"
-                                                        onClick={() => setIsOpen(false)}
-                                                        className={`text-sm font-medium hover:bg-accent hover:text-accent-foreground rounded-md px-3 py-2 transition-colors ${pathname?.startsWith('/orders') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'}`}
-                                                    >
-                                                        Pesanan Saya
-                                                    </Link>
                                                     <Link
                                                         href="/profile"
                                                         onClick={() => setIsOpen(false)}

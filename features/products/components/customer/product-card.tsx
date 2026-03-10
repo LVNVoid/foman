@@ -2,32 +2,18 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Eye } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { memo, useState, useCallback, useMemo, useTransition } from 'react';
+import { memo, useState, useCallback, useMemo } from 'react';
 import { formatCurrency } from '@/lib/utils';
-import { CartProduct, ProductListItem } from '@/types/product';
-import { useCart } from '@/features/cart/context/cart.context';
+import { ProductListItem } from '@/types/product';
 
 interface ProductCardProps {
     product: ProductListItem;
 }
 
-function toCartProduct(product: ProductListItem): CartProduct {
-    return {
-        id: product.id,
-        name: product.name,
-        slug: product.slug,
-        minPrice: product.minPrice,
-        description: product.description,
-        pictures: product.pictures,
-    };
-}
-
 export const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
-    const { addItem } = useCart();
     const [imageLoaded, setImageLoaded] = useState(false);
-    const [isPending, startTransition] = useTransition();
 
     const primaryImage = useMemo(
         () => product.pictures[0]?.imageUrl || '/images/placeholder-image.png',
@@ -51,20 +37,6 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
             return '-';
         },
         [product.minPrice, product.maxPrice, product.variants, hasVariants]
-    );
-
-    const handleAddToCart = useCallback(
-        (e: React.MouseEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            if (isPending) return;
-
-            startTransition(() => {
-                addItem(toCartProduct(product));
-            });
-        },
-        [addItem, product, isPending]
     );
 
     const handleImageLoad = useCallback(() => {

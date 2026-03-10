@@ -22,6 +22,7 @@ model User {
   profilePublicId String?
   role            Role           @default(CUSTOMER)
   phoneNumber     String         @unique
+  // SAFE TO DELETE - no longer used
   orders          Order[]
   notifications   Notification[]
   createdAt       DateTime       @default(now())
@@ -40,6 +41,7 @@ model Product {
   pictures       ProductPicture[]
   variants       ProductVariant[]
   specifications ProductSpecification[]
+  // SAFE TO DELETE - no longer used
   orderItems     OrderItem[]
   createdAt      DateTime               @default(now())
   updatedAt      DateTime               @updatedAt
@@ -68,6 +70,7 @@ model ProductVariant {
   unit       String?
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
+  // SAFE TO DELETE - no longer used
   orderItems OrderItem[]
 
   @@index([productId])
@@ -95,6 +98,7 @@ model ProductPicture {
   product       Product  @relation(fields: [productId], references: [id])
 }
 
+// SAFE TO DELETE - no longer used
 model Order {
   id        String      @id @default(uuid())
   userId    String
@@ -110,6 +114,7 @@ model Order {
   @@index([userId])
 }
 
+// SAFE TO DELETE - no longer used
 model OrderItem {
   id               String          @id @default(uuid())
   orderId          String

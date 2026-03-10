@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Printer, Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react';
-
-export function Footer() {
+export function Footer({ settings }: { settings?: Record<string, any> | null }) {
+    const storeName = settings?.storeName || 'Foman Kreasi';
     return (
         <footer className="w-full border-t bg-background/50 backdrop-blur-sm">
             <div className="container py-12 md:py-20">
@@ -11,7 +11,7 @@ export function Footer() {
                             <div className="bg-primary/10 p-2 rounded-lg group-hover:bg-primary/20 transition-colors">
                                 <Printer className="h-6 w-6 text-primary" />
                             </div>
-                            <span className="text-xl font-bold tracking-tight">Foman Kreasi</span>
+                            <span className="text-xl font-bold tracking-tight">{storeName}</span>
                         </Link>
                         <p className="text-sm text-muted-foreground leading-relaxed">
                             Solusi satu pintu untuk semua kebutuhan percetakan berkualitas tinggi Anda.
@@ -40,18 +40,24 @@ export function Footer() {
                     <div>
                         <h3 className="font-semibold mb-4">Hubungi Kami</h3>
                         <ul className="space-y-3 text-sm text-muted-foreground">
-                            <li className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4" />
-                                <span>123 Printing Street, City, Country</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <Phone className="h-4 w-4" />
-                                <span>+1 234 567 8900</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <Mail className="h-4 w-4" />
-                                <span>hello@foman.com</span>
-                            </li>
+                            {settings?.contactAddress && (
+                                <li className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 shrink-0" />
+                                    <span>{settings.contactAddress}</span>
+                                </li>
+                            )}
+                            {settings?.contactPhone && (
+                                <li className="flex items-center gap-2">
+                                    <Phone className="h-4 w-4 shrink-0" />
+                                    <span>{settings.contactPhone}</span>
+                                </li>
+                            )}
+                            {settings?.contactEmail && (
+                                <li className="flex items-center gap-2">
+                                    <Mail className="h-4 w-4 shrink-0" />
+                                    <span>{settings.contactEmail}</span>
+                                </li>
+                            )}
                         </ul>
                         <div className="flex gap-4 mt-4">
                             <Link href="#" className="text-muted-foreground hover:text-primary">
@@ -68,7 +74,7 @@ export function Footer() {
                 </div>
 
                 <div className="border-t mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-                    <p>© {new Date().getFullYear()} Foman Kreasi. Hak cipta dilindungi.</p>
+                    <p>© {new Date().getFullYear()} {storeName}. Hak cipta dilindungi.</p>
                     <div className="flex gap-6">
                         <Link href="/privacy" className="hover:text-primary">Kebijakan Privasi</Link>
                         <Link href="/terms" className="hover:text-primary">Syarat & Ketentuan</Link>

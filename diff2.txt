@@ -1,0 +1,2762 @@
+﻿diff --git a/app/(customer)/checkout/page.tsx b/app/(customer)/checkout/page.tsx
+deleted file mode 100644
+index f57b694..0000000
+--- a/app/(customer)/checkout/page.tsx
++++ /dev/null
+@@ -1,153 +0,0 @@
+-'use client';
+-
+-import { Suspense } from 'react';
+-
+-import { useCart } from '@/features/cart/context/cart.context';
+-import { Button } from '@/components/ui/button';
+-import { useSession } from 'next-auth/react';
+-import { useRouter } from 'next/navigation';
+-import { useEffect, useState } from 'react';
+-import Image from 'next/image';
+-import toast from 'react-hot-toast';
+-import { Loader2 } from 'lucide-react';
+-import { formatCurrency } from '@/lib/utils';
+-import { createOrder } from '@/features/orders/actions/order.actions';
+-
+-function CheckoutContent() {
+-    const { items, cartTotal, clearCart } = useCart();
+-    const { data: session, status } = useSession();
+-    const router = useRouter();
+-    const [isSubmitting, setIsSubmitting] = useState(false);
+-
+-    useEffect(() => {
+-        if (status === 'unauthenticated') {
+-            router.push('/login?callbackUrl=/checkout');
+-        }
+-    }, [status, router]);
+-
+-    if (status === 'loading') {
+-        return <div className="container py-10">Memuat...</div>;
+-    }
+-
+-    if (items.length === 0) {
+-        return (
+-            <div className="container py-10 text-center">
+-                <h1 className="text-2xl font-bold mb-4">Keranjang Anda kosong</h1>
+-                <Button onClick={() => router.push('/products')}>Lihat Produk</Button>
+-            </div>
+-        );
+-    }
+-
+-    const handlePlaceOrder = async () => {
+-        if (!session?.user?.id) return;
+-
+-        setIsSubmitting(true);
+-        try {
+-            const result = await createOrder({
+-                userId: session.user.id,
+-                items: items.map((item) => ({
+-                    productId: item.product.id,
+-                    quantity: item.quantity,
+-                    productVariantId: item.product.selectedVariant?.id || undefined
+-                }))
+-            });
+-
+-            if (result.success) {
+-                clearCart();
+-                toast.success('Pesanan berhasil dibuat! Mengalihkan ke pesanan Anda...');
+-                router.push('/orders');
+-            } else {
+-                toast.error(result.error || 'Gagal membuat pesanan');
+-            }
+-        } catch (error) {
+-            console.error(error);
+-            toast.error('Terjadi kesalahan yang tidak terduga');
+-        } finally {
+-            setIsSubmitting(false);
+-        }
+-    };
+-
+-    return (
+-        <div className="container py-10 max-w-4xl">
+-            <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+-
+-            <div className="grid md:grid-cols-3 gap-8">
+-                <div className="md:col-span-2 space-y-4">
+-                    <div className="border rounded-lg p-6 space-y-4">
+-                        <h2 className="text-xl font-semibold mb-4">Ringkasan Pesanan</h2>
+-                        {items.map((item) => (
+-                            <div key={item.id} className="flex gap-4 py-2 border-b last:border-0">
+-                                <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border bg-secondary/20">
+-                                    {item.product.pictures[0]?.imageUrl ? (
+-                                        <Image
+-                                            src={item.product.pictures[0].imageUrl}
+-                                            alt={item.product.name}
+-                                            fill
+-                                            className="object-cover"
+-                                        />
+-                                    ) : (
+-                                        <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+-                                            Tidak Ada Gambar
+-                                        </div>
+-                                    )}
+-                                </div>
+-                                <div className="flex-1">
+-                                    <h3 className="font-medium">
+-                                        {item.product.name}
+-                                        {item.product.selectedVariant && (
+-                                            <span className="text-sm font-normal text-muted-foreground ml-2">
+-                                                ({item.product.selectedVariant.name})
+-                                            </span>
+-                                        )}
+-                                    </h3>
+-                                    <p className="text-sm text-muted-foreground">
+-                                        {item.quantity} x{' '}
+-                                        {formatCurrency(item.product.selectedVariant?.price || item.product.minPrice || 0)}
+-                                    </p>
+-                                </div>
+-                                <div className="font-bold">
+-                                    {formatCurrency((item.product.selectedVariant?.price || item.product.minPrice || 0) * item.quantity)}
+-                                </div>
+-                            </div>
+-                        ))}
+-                    </div>
+-                </div>
+-
+-                <div className="md:col-span-1">
+-                    <div className="border rounded-lg p-6 sticky top-24">
+-                        <h2 className="text-xl font-semibold mb-4">Total</h2>
+-                        <div className="flex justify-between items-center mb-6">
+-                            <span className="text-muted-foreground">Subtotal</span>
+-                            <span className="text-2xl font-bold">
+-                                {formatCurrency(cartTotal)}
+-                            </span>
+-                        </div>
+-                        <Button
+-                            className="w-full"
+-                            size="lg"
+-                            onClick={handlePlaceOrder}
+-                            disabled={isSubmitting}
+-                        >
+-                            {isSubmitting ? (
+-                                <>
+-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+-                                    Memproses...
+-                                </>
+-                            ) : (
+-                                'Buat Pesanan'
+-                            )}
+-                        </Button>
+-                    </div>
+-                </div>
+-            </div>
+-        </div>
+-    );
+-}
+-
+-export default function CheckoutPage() {
+-    return (
+-        <Suspense fallback={<div className="container py-10 flex justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+-            <CheckoutContent />
+-        </Suspense>
+-    );
+-}
+diff --git a/app/(customer)/layout.tsx b/app/(customer)/layout.tsx
+index ec0ad26..e400eea 100644
+--- a/app/(customer)/layout.tsx
++++ b/app/(customer)/layout.tsx
+@@ -1,7 +1,5 @@
+ import { Navbar } from '@/components/layouts/customer/navbar';
+ import { Footer } from '@/components/layouts/customer/footer';
+-import { CartProvider } from '@/features/cart/context/cart.context';
+-import { CartSheet } from '@/features/cart/components/cart-sheet';
+ 
+ import { getStoreSettings } from '@/features/settings/actions/settings.actions';
+ import { WhatsAppButton } from '@/components/WhatsAppButton';
+@@ -17,30 +15,27 @@ export default async function CustomerLayout({
+     const storeName = settings?.storeName;
+ 
+     return (
+-        <CartProvider>
+-            <div className="flex min-h-screen flex-col max-w-8xl relative isolate">
+-                {/* Dynamic Background */}
+-                <div className="fixed inset-0 -z-10 h-full w-full bg-background overflow-hidden">
+-                    <GridPattern
+-                        width={40}
+-                        height={40}
+-                        x={-1}
+-                        y={-1}
+-                        strokeDasharray={"4 2"}
+-                        className="[mask-image:radial-gradient(900px_circle_at_center,white,transparent)] opacity-50 absolute inset-0 h-full w-full"
+-                    />
+-                    <div className="absolute bottom-0 left-[-20%] right-0 top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,oklch(var(--primary)/0.15),rgba(255,255,255,0))] blur-[100px] dark:bg-[radial-gradient(circle_farthest-side,oklch(var(--primary)/0.25),rgba(255,255,255,0))]"></div>
+-                    <div className="absolute bottom-0 right-[-20%] top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,oklch(var(--secondary)/0.15),rgba(255,255,255,0))] blur-[100px] dark:bg-[radial-gradient(circle_farthest-side,oklch(var(--secondary)/0.25),rgba(255,255,255,0))]"></div>
+-                </div>
++        <div className="flex min-h-screen flex-col max-w-8xl relative isolate">
++            {/* Dynamic Background */}
++            <div className="fixed inset-0 -z-10 h-full w-full bg-background overflow-hidden">
++                <GridPattern
++                    width={40}
++                    height={40}
++                    x={-1}
++                    y={-1}
++                    strokeDasharray={"4 2"}
++                    className="[mask-image:radial-gradient(900px_circle_at_center,white,transparent)] opacity-50 absolute inset-0 h-full w-full"
++                />
++                <div className="absolute bottom-0 left-[-20%] right-0 top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,oklch(var(--primary)/0.15),rgba(255,255,255,0))] blur-[100px] dark:bg-[radial-gradient(circle_farthest-side,oklch(var(--primary)/0.25),rgba(255,255,255,0))]"></div>
++                <div className="absolute bottom-0 right-[-20%] top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,oklch(var(--secondary)/0.15),rgba(255,255,255,0))] blur-[100px] dark:bg-[radial-gradient(circle_farthest-side,oklch(var(--secondary)/0.25),rgba(255,255,255,0))]"></div>
++            </div>
+ 
+-                <Navbar storeName={storeName} />
+-                <div className="container mx-auto px-2">
+-                    <main className="flex-1">{children}</main>
+-                    <Footer />
+-                </div>
+-                <CartSheet />
+-                <WhatsAppButton phoneNumber={settings?.whatsappNumber} />
++            <Navbar storeName={storeName} />
++            <div className="container mx-auto px-2">
++                <main className="flex-1">{children}</main>
++                <Footer settings={settings} />
+             </div>
+-        </CartProvider>
++            <WhatsAppButton phoneNumber={settings?.whatsappNumber} />
++        </div>
+     );
+ }
+diff --git a/app/(customer)/orders/[id]/page.tsx b/app/(customer)/orders/[id]/page.tsx
+deleted file mode 100644
+index 753a8b0..0000000
+--- a/app/(customer)/orders/[id]/page.tsx
++++ /dev/null
+@@ -1,129 +0,0 @@
+-import { getOrderById } from '@/features/orders/actions/admin-order.actions';
+-import { getServerSession } from 'next-auth';
+-import { authOptions } from '@/lib/auth';
+-import { redirect, notFound } from 'next/navigation';
+-import { formatCurrency, formatDate } from '@/lib/utils';
+-import { Badge } from '@/components/ui/badge';
+-import { Button } from '@/components/ui/button';
+-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+-import { Separator } from '@/components/ui/separator';
+-import Link from 'next/link';
+-import { ArrowLeft, MapPin } from 'lucide-react';
+-import Image from 'next/image';
+-
+-interface PageProps {
+-    params: Promise<{ id: string }>;
+-}
+-
+-export default async function OrderDetailPage(props: PageProps) {
+-    const params = await props.params;
+-    const session = await getServerSession(authOptions);
+-
+-    if (!session?.user) {
+-        redirect('/login');
+-    }
+-
+-    const { success, order } = await getOrderById(params.id);
+-
+-    if (!success || !order) {
+-        notFound();
+-    }
+-
+-    // Security Check: Ensure order belongs to logged-in user
+-    if (order.user?.id !== session.user.id) {
+-        redirect('/orders');
+-    }
+-
+-    return (
+-        <div className="container max-w-4xl py-10 space-y-8">
+-            <div className="flex items-center gap-4">
+-                <Link href="/orders">
+-                    <Button variant="ghost" size="icon">
+-                        <ArrowLeft className="h-4 w-4" />
+-                    </Button>
+-                </Link>
+-                <div>
+-                    <h1 className="text-2xl font-bold">Detail Pesanan</h1>
+-                    <p className="text-muted-foreground text-sm">Validasi order: #{order.id.slice(0, 8)}</p>
+-                </div>
+-                <div className="ml-auto">
+-                    <Badge variant={order.status === 'COMPLETED' ? 'default' : 'secondary'} className="text-base px-4 py-1">
+-                        {order.status}
+-                    </Badge>
+-                </div>
+-            </div>
+-
+-            <div className="grid gap-6 md:grid-cols-3">
+-                <div className="md:col-span-2 space-y-6">
+-                    <Card>
+-                        <CardHeader>
+-                            <CardTitle>Item Pesanan</CardTitle>
+-                        </CardHeader>
+-                        <CardContent className="grid gap-4">
+-                            {order.items.map((item: any) => (
+-                                <div key={item.id} className="flex items-start justify-between gap-4">
+-                                    <div className="flex items-center gap-4">
+-                                        <div className="relative h-16 w-16 overflow-hidden rounded-lg border bg-muted">
+-                                            {item.product.pictures?.[0]?.imageUrl ? (
+-                                                <Image
+-                                                    src={item.product.pictures[0].imageUrl}
+-                                                    alt={item.product.name}
+-                                                    fill
+-                                                    className="object-cover"
+-                                                />
+-                                            ) : (
+-                                                <div className="flex h-full w-full items-center justify-center bg-secondary">
+-                                                    <span className="text-xs text-muted-foreground">No Img</span>
+-                                                </div>
+-                                            )}
+-                                        </div>
+-                                        <div>
+-                                            <h3 className="font-semibold">{item.product.name}</h3>
+-                                            <p className="text-sm text-muted-foreground">{item.quantity} x {formatCurrency(item.price)}</p>
+-                                        </div>
+-                                    </div>
+-                                    <p className="font-medium">
+-                                        {formatCurrency(item.price * item.quantity)}
+-                                    </p>
+-                                </div>
+-                            ))}
+-                        </CardContent>
+-                    </Card>
+-
+-                    <Card>
+-                        <CardHeader>
+-                            <CardTitle>Rincian Pembayaran</CardTitle>
+-                        </CardHeader>
+-                        <CardContent className="space-y-4">
+-                            <div className="flex justify-between">
+-                                <span className="text-muted-foreground">Subtotal Produk</span>
+-                                <span>{formatCurrency(order.total)}</span>
+-                            </div>
+-                            {/* Add shipping or other fees here if available */}
+-                            <Separator />
+-                            <div className="flex justify-between font-bold text-lg">
+-                                <span>Total Belanja</span>
+-                                <span className="text-primary">{formatCurrency(order.total)}</span>
+-                            </div>
+-                        </CardContent>
+-                    </Card>
+-                </div>
+-
+-                <div className="space-y-6">
+-                    <Card>
+-                        <CardHeader>
+-                            <CardTitle className="text-base">Butuh Bantuan?</CardTitle>
+-                        </CardHeader>
+-                        <CardContent>
+-                            <Button className="w-full" asChild>
+-                                <Link href="https://wa.me/6281234567890" target="_blank">
+-                                    Hubungi WhatsApp
+-                                </Link>
+-                            </Button>
+-                        </CardContent>
+-                    </Card>
+-                </div>
+-            </div>
+-        </div>
+-    );
+-}
+diff --git a/app/(customer)/orders/history/page.tsx b/app/(customer)/orders/history/page.tsx
+deleted file mode 100644
+index 1a6bf69..0000000
+--- a/app/(customer)/orders/history/page.tsx
++++ /dev/null
+@@ -1,74 +0,0 @@
+-import { getUserOrders } from '@/features/orders/actions/order.actions';
+-import { OrderToolbar } from '@/features/orders/components/customer/order-toolbar';
+-import { getServerSession } from 'next-auth';
+-import { authOptions } from '@/lib/auth';
+-import { redirect } from 'next/navigation';
+-import Link from 'next/link';
+-import { Button } from '@/components/ui/button';
+-import {
+-    Table,
+-    TableBody,
+-    TableCell,
+-    TableHead,
+-    TableHeader,
+-    TableRow,
+-} from '@/components/ui/table';
+-import { Badge } from '@/components/ui/badge';
+-import { formatCurrency, formatDate } from '@/lib/utils';
+-
+-export default async function OrderHistoryPage() {
+-    const session = await getServerSession(authOptions);
+-
+-    if (!session?.user) {
+-        redirect('/login');
+-    }
+-
+-    const orders = await getUserOrders(session.user.id, ['COMPLETED', 'CANCELLED']);
+-
+-    return (
+-        <div className="container py-10">
+-            <h1 className="text-3xl font-bold mb-8">Riwayat Pesanan</h1>
+-
+-            <OrderToolbar />
+-
+-            {orders.length > 0 ? (
+-                <div className="border rounded-lg">
+-                    <Table>
+-                        <TableHeader>
+-                            <TableRow>
+-                                <TableHead>ID Pesanan</TableHead>
+-                                <TableHead>Tanggal</TableHead>
+-                                <TableHead>Status</TableHead>
+-                                <TableHead>Total</TableHead>
+-                                <TableHead>Item</TableHead>
+-                            </TableRow>
+-                        </TableHeader>
+-                        <TableBody>
+-                            {orders.map((order: any) => (
+-                                <TableRow key={order.id}>
+-                                    <TableCell className="font-medium">{order.id.slice(0, 8)}...</TableCell>
+-                                    <TableCell>{formatDate(order.createdAt)}</TableCell>
+-                                    <TableCell>
+-                                        <Badge variant={order.status === 'COMPLETED' ? 'default' : 'secondary'}>
+-                                            {order.status}
+-                                        </Badge>
+-                                    </TableCell>
+-                                    <TableCell>
+-                                        {formatCurrency(order.total)}
+-                                    </TableCell>
+-                                    <TableCell>
+-                                        {order.items.length} item
+-                                    </TableCell>
+-                                </TableRow>
+-                            ))}
+-                        </TableBody>
+-                    </Table>
+-                </div>
+-            ) : (
+-                <div className="text-center py-20 border rounded-lg bg-secondary/10">
+-                    <p className="text-muted-foreground">Tidak ada riwayat pesanan.</p>
+-                </div>
+-            )}
+-        </div>
+-    );
+-}
+diff --git a/app/(customer)/orders/page.tsx b/app/(customer)/orders/page.tsx
+deleted file mode 100644
+index b772334..0000000
+--- a/app/(customer)/orders/page.tsx
++++ /dev/null
+@@ -1,86 +0,0 @@
+-import { OrderToolbar } from '@/features/orders/components/customer/order-toolbar';
+-import { getServerSession } from 'next-auth';
+-import { authOptions } from '@/lib/auth';
+-import { redirect } from 'next/navigation';
+-import Link from 'next/link';
+-import {
+-    Table,
+-    TableBody,
+-    TableCell,
+-    TableHead,
+-    TableHeader,
+-    TableRow,
+-} from '@/components/ui/table';
+-import { Badge } from '@/components/ui/badge';
+-import { formatCurrency, formatDate } from '@/lib/utils';
+-import { Metadata } from 'next';
+-import { getUserOrders } from '@/features/orders/actions/order.actions';
+-
+-export const metadata: Metadata = {
+-    title: 'Pesanan Saya - Foman Percetakan',
+-    robots: {
+-        index: false,
+-        follow: false,
+-    },
+-};
+-
+-export default async function OrdersPage() {
+-    const session = await getServerSession(authOptions);
+-
+-    if (!session?.user) {
+-        redirect('/login');
+-    }
+-
+-    const orders = await getUserOrders(session.user.id, ['PENDING', 'PAID', 'SHIPPED']);
+-
+-    return (
+-        <div className="container py-10">
+-            <h1 className="text-3xl font-bold mb-8">Pesanan Saya</h1>
+-
+-            <OrderToolbar />
+-
+-            {orders.length > 0 ? (
+-                <div className="border rounded-lg">
+-                    <Table>
+-                        <TableHeader>
+-                            <TableRow>
+-                                <TableHead>ID Pesanan</TableHead>
+-                                <TableHead>Tanggal</TableHead>
+-                                <TableHead>Status</TableHead>
+-                                <TableHead>Total</TableHead>
+-                                <TableHead>Item</TableHead>
+-                            </TableRow>
+-                        </TableHeader>
+-                        <TableBody>
+-                            {orders.map((order) => (
+-                                <TableRow key={order.id}>
+-                                    <TableCell className="font-medium">
+-                                        <Link href={`/orders/${order.id}`} className="hover:underline hover:text-primary">
+-                                            {order.id.slice(0, 8)}...
+-                                        </Link>
+-                                    </TableCell>
+-                                    <TableCell>{formatDate(order.createdAt)}</TableCell>
+-                                    <TableCell>
+-                                        <Badge variant={order.status === 'COMPLETED' ? 'default' : 'secondary'}>
+-                                            {order.status}
+-                                        </Badge>
+-                                    </TableCell>
+-                                    <TableCell>
+-                                        {formatCurrency(order.total)}
+-                                    </TableCell>
+-                                    <TableCell>
+-                                        {order.items.length} item
+-                                    </TableCell>
+-                                </TableRow>
+-                            ))}
+-                        </TableBody>
+-                    </Table>
+-                </div>
+-            ) : (
+-                <div className="text-center py-20 border rounded-lg bg-secondary/10">
+-                    <p className="text-muted-foreground">Tidak ada pesanan yang sedang berjalan.</p>
+-                </div>
+-            )}
+-        </div>
+-    );
+-}
+diff --git a/app/(customer)/products/[slug]/page.tsx b/app/(customer)/products/[slug]/page.tsx
+index 9ae4d1c..af697ef 100644
+--- a/app/(customer)/products/[slug]/page.tsx
++++ b/app/(customer)/products/[slug]/page.tsx
+@@ -1,7 +1,6 @@
+ import prisma from '@/lib/prisma';
+ import { notFound } from 'next/navigation';
+ import { Metadata } from 'next';
+-import { AddToCartButton } from '@/features/cart/components/add-to-cart-button';
+ import { ProductOptions } from '@/features/products/components/customer/product-options';
+ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+@@ -9,6 +8,7 @@ import Link from 'next/link';
+ import { formatCurrency } from '@/lib/utils';
+ import { ProductImageGallery } from '@/features/products/components/customer/product-image-gallery';
+ import { siteConfig } from '@/lib/seo';
++import { getStoreSettings } from '@/features/settings/actions/settings.actions';
+ 
+ export async function generateStaticParams() {
+     const products = await prisma.product.findMany({
+@@ -114,6 +114,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
+ export default async function ProductPage({ params }: ProductPageProps) {
+     const { slug } = await params;
+ 
++    const settingsResult = await getStoreSettings();
++    const settings = 'settings' in settingsResult ? settingsResult.settings : null;
++
+     const product = await prisma.product.findUnique({
+         where: { slug },
+         include: {
+@@ -273,7 +276,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
+                     </div>
+ 
+                     {/* Varian, Harga & Add to Cart via ProductOptions */}
+-                    <ProductOptions product={product} />
++                    <ProductOptions product={product} storeSettings={settings} />
+ 
+                     {/* Details Tabs */}
+                     <div className="pt-8 border-t">
+diff --git a/app/admin/dashboard/page.tsx b/app/admin/dashboard/page.tsx
+index 6f6d153..85179b4 100644
+--- a/app/admin/dashboard/page.tsx
++++ b/app/admin/dashboard/page.tsx
+@@ -1,9 +1,8 @@
+ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+ import { getDashboardStats } from "@/features/dashboard/actions/dashboard.actions";
+-import { CreditCard, DollarSign, Package, ShoppingCart, Users, TrendingUp, Clock } from "lucide-react";
++import { CreditCard, Folder, Package, Users, AlertTriangle, CheckCircle2 } from "lucide-react";
+ import Link from "next/link";
+ import { Button } from "@/components/ui/button";
+-import { formatCurrency, formatDate } from "@/lib/utils";
+ import { Metadata } from "next";
+ 
+ export const metadata: Metadata = {
+@@ -28,24 +27,19 @@ export default async function DashboardAdminPage() {
+   };
+ 
+   const statCards = [
+-    {
+-      title: "Total Pendapatan Bulan Ini",
+-      value: formatCurrency(stats.totalRevenue),
+-      description: "Total pendapatan",
+-      icon: DollarSign,
+-    },
+-    {
+-      title: "Total Pesanan Bulan Ini",
+-      value: stats.totalOrders,
+-      description: "Pesanan masuk",
+-      icon: ShoppingCart,
+-    },
+     {
+       title: "Total Produk",
+       value: stats.totalProducts,
+-      description: "Produk aktif",
++      description: "Keseluruhan produk",
+       icon: Package,
+     },
++    {
++      title: "Total Kategori",
++      value: stats.totalCategories,
++      description: "Kategori produk",
++      icon: Folder,
++    },
++
+     {
+       title: "Total Pelanggan",
+       value: stats.totalCustomers,
+@@ -67,12 +61,6 @@ export default async function DashboardAdminPage() {
+       label: "Kategori",
+       description: "Kelola kategori produk"
+     },
+-    {
+-      href: "/admin/orders",
+-      icon: ShoppingCart,
+-      label: "Pesanan",
+-      description: "Kelola pesanan"
+-    },
+   ];
+ 
+   return (
+@@ -86,7 +74,7 @@ export default async function DashboardAdminPage() {
+       </div>
+ 
+       {/* Stats Grid */}
+-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
++      <div className="grid gap-4 md:grid-cols-3">
+         {statCards.map((stat, index) => (
+           <Card key={index}>
+             <CardHeader>
+@@ -108,52 +96,39 @@ export default async function DashboardAdminPage() {
+       </div>
+ 
+       {/* Main Content Grid */}
+-      <div className="grid gap-4 lg:grid-cols-3 ">
+-        {/* Recent Orders - Takes 2 columns */}
+-        <Card className="lg:col-span-2">
++      <div className="grid gap-4 lg:grid-cols-2">
++
++        {/* Out of Stock Warning Component */}
++        <Card>
+           <CardHeader className="border-b">
+-            <div className="flex items-center justify-between">
+-              <div>
+-                <CardTitle>Pesanan Terbaru</CardTitle>
+-                <p className="text-sm text-muted-foreground mt-1">Pesanan terbaru dari pelanggan</p>
+-              </div>
+-              <Button variant="ghost" size="sm" asChild>
+-                <Link href="/admin/orders">
+-                  Lihat Semua ΓåÆ
+-                </Link>
+-              </Button>
+-            </div>
++            <CardTitle className="text-destructive flex items-center gap-2">
++              <AlertTriangle className="h-5 w-5" />
++              Peringatan Stok Habis
++            </CardTitle>
++            <p className="text-sm text-muted-foreground mt-1">Varian produk yang perlu diisi ulang</p>
+           </CardHeader>
+           <CardContent className="pt-6">
+-            {stats.recentOrders.length === 0 ? (
+-              <div className="text-center py-12">
+-                <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+-                <p className="text-sm text-muted-foreground">Tidak ada pesanan ditemukan.</p>
++            {stats.outOfStockVariants.length === 0 ? (
++              <div className="text-center py-8">
++                <CheckCircle2 className="h-10 w-10 text-green-500 mx-auto mb-3" />
++                <p className="text-sm text-green-600 font-medium">Semua stok varian tersedia!</p>
+               </div>
+             ) : (
+-              <div className="space-y-4">
+-                {stats.recentOrders.map((order: any) => (
++              <div className="space-y-3">
++                {stats.outOfStockVariants.map((variant: any) => (
+                   <div
+-                    key={order.id}
+-                    className="flex items-center p-4 border rounded-lg hover:bg-muted/50 transition-colors"
++                    key={variant.id}
++                    className="flex justify-between items-center p-3 border rounded-lg bg-destructive/5"
+                   >
+-                    <div className="flex-shrink-0 w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold text-sm">
+-                      {order.user.name.charAt(0).toUpperCase()}
+-                    </div>
+-                    <div className="ml-4 flex-1 min-w-0">
+-                      <p className="text-sm font-semibold truncate">{order.user.name}</p>
+-                      <p className="text-xs text-muted-foreground truncate">{order.user.email}</p>
+-                      <div className="flex items-center mt-1 text-xs text-muted-foreground">
+-                        <Clock className="h-3 w-3 mr-1" />
+-                        {formatDate(order.createdAt)}
+-                      </div>
+-                    </div>
+-                    <div className="ml-4 text-right flex-shrink-0">
+-                      <p className="text-sm font-bold">{formatCurrency(order.total)}</p>
+-                      <span className={`inline-flex items-center mt-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(order.status)}`}>
+-                        {order.status}
+-                      </span>
++                    <div>
++                      <p className="font-semibold text-sm">{variant.product.name}</p>
++                      <p className="text-xs text-muted-foreground">Varian: {variant.name}</p>
+                     </div>
++                    <Button variant="ghost" size="sm" asChild className="ext-xs font-bold text-destructive hover:text-destructive/80 shrink-0">
++                      <Link href={`/admin/products`}>
++                        Stok 0
++                      </Link>
++                    </Button>
+                   </div>
+                 ))}
+               </div>
+@@ -161,7 +136,7 @@ export default async function DashboardAdminPage() {
+           </CardContent>
+         </Card>
+ 
+-        {/* Quick Actions - Takes 1 column */}
++        {/* Quick Actions */}
+         <Card>
+           <CardHeader className="border-b">
+             <CardTitle>Aksi Cepat</CardTitle>
+diff --git a/app/admin/orders/[id]/page.tsx b/app/admin/orders/[id]/page.tsx
+deleted file mode 100644
+index 73045d4..0000000
+--- a/app/admin/orders/[id]/page.tsx
++++ /dev/null
+@@ -1,116 +0,0 @@
+-import { getOrderById } from '@/features/orders/actions/admin-order.actions';
+-import { Button } from '@/components/ui/button';
+-import Link from 'next/link';
+-import { notFound } from 'next/navigation';
+-import { OrderStatusUpdater } from '@/features/orders/components/admin/order-status-updater';
+-import { formatCurrency } from '@/lib/utils';
+-
+-interface OrderDetailPageProps {
+-  params: Promise<{
+-    id: string;
+-  }>;
+-}
+-
+-export default async function OrderDetailPage({
+-  params,
+-}: OrderDetailPageProps) {
+-  const { id } = await params;
+-  const { order, error } = await getOrderById(id);
+-
+-  if (error || !order) {
+-    if (error === 'Order not found') {
+-      notFound();
+-    }
+-    return <div className="p-4 text-red-500">Error loading order: {error}</div>;
+-  }
+-
+-  return (
+-    <div className="space-y-6">
+-      <div className="flex items-center justify-between">
+-        <div className="flex items-center gap-4">
+-          <Button variant="outline" size="sm" asChild>
+-            <Link href="/admin/orders">ΓåÉ Back</Link>
+-          </Button>
+-          <h1 className="text-2xl font-bold">Order Details</h1>
+-        </div>
+-        <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
+-      </div>
+-
+-      <div className="grid gap-6 md:grid-cols-2">
+-        <div className="space-y-6">
+-          <div className="rounded-md border bg-card p-6">
+-            <h2 className="text-lg font-semibold mb-4">Customer Information</h2>
+-            <dl className="grid gap-2 text-sm">
+-              <div className="flex justify-between">
+-                <dt className="text-muted-foreground">Name</dt>
+-                <dd className="font-medium">{order.user.name}</dd>
+-              </div>
+-              <div className="flex justify-between">
+-                <dt className="text-muted-foreground">Email</dt>
+-                <dd className="font-medium">{order.user.email}</dd>
+-              </div>
+-              <div className="flex justify-between">
+-                <dt className="text-muted-foreground">Nomor Telepon</dt>
+-                <dd className="font-medium">{order.user.phoneNumber}</dd>
+-              </div>
+-              <div className="flex justify-between">
+-                <dt className="text-muted-foreground">User ID</dt>
+-                <dd className="font-medium text-xs text-muted-foreground">
+-                  {order.user.id}
+-                </dd>
+-              </div>
+-            </dl>
+-          </div>
+-
+-          <div className="rounded-md border bg-card p-6">
+-            <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+-            <dl className="grid gap-2 text-sm">
+-              <div className="flex justify-between">
+-                <dt className="text-muted-foreground">Order ID</dt>
+-                <dd className="font-medium text-xs text-muted-foreground">
+-                  {order.id}
+-                </dd>
+-              </div>
+-              <div className="flex justify-between">
+-                <dt className="text-muted-foreground">Date</dt>
+-                <dd className="font-medium">
+-                  {new Date(order.createdAt).toLocaleString()}
+-                </dd>
+-              </div>
+-              <div className="flex justify-between pt-4 border-t">
+-                <dt className="font-semibold">Total Amount</dt>
+-                <dd className="font-bold text-lg">
+-                  {formatCurrency(order.total)}
+-                </dd>
+-              </div>
+-            </dl>
+-          </div>
+-        </div>
+-
+-        <div className="rounded-md border bg-card p-6">
+-          <h2 className="text-lg font-semibold mb-4">Order Items</h2>
+-          <div className="space-y-4">
+-            {order.items.map((item: any) => (
+-              <div
+-                key={item.id}
+-                className="flex items-start justify-between border-b pb-4 last:border-0 last:pb-0"
+-              >
+-                <div className="flex gap-4">
+-                  <div className="space-y-1">
+-                    <p className="font-medium">{item.product.name}</p>
+-                    <p className="text-sm text-muted-foreground">
+-                      {formatCurrency(item.price)} x {item.quantity}
+-                    </p>
+-                  </div>
+-                </div>
+-                <div className="font-medium">
+-                  {formatCurrency(item.price * item.quantity)}
+-                </div>
+-              </div>
+-            ))}
+-          </div>
+-        </div>
+-      </div>
+-    </div>
+-  );
+-}
+diff --git a/app/admin/orders/loading.tsx b/app/admin/orders/loading.tsx
+deleted file mode 100644
+index c3fbe49..0000000
+--- a/app/admin/orders/loading.tsx
++++ /dev/null
+@@ -1,87 +0,0 @@
+-import { Skeleton } from "@/components/ui/skeleton"
+-
+-export default function OrdersLoading() {
+-    return (
+-        <div className="space-y-6">
+-            <div className="flex items-center justify-between">
+-                <div>
+-                    <Skeleton className="h-9 w-32" />
+-                    <Skeleton className="h-5 w-48 mt-1" />
+-                </div>
+-            </div>
+-            <div className="space-y-4">
+-                <div className="flex items-center justify-between">
+-                    <Skeleton className="h-10 w-[250px]" />
+-                    <Skeleton className="h-10 w-[100px]" />
+-                </div>
+-
+-                <div className="rounded-md border bg-card">
+-                    <div className="relative w-full overflow-auto">
+-                        <table className="w-full caption-bottom text-sm">
+-                            <thead className="[&_tr]:border-b">
+-                                <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+-                                        <Skeleton className="h-4 w-16" />
+-                                    </th>
+-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+-                                        <Skeleton className="h-4 w-24" />
+-                                    </th>
+-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+-                                        <Skeleton className="h-4 w-12" />
+-                                    </th>
+-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+-                                        <Skeleton className="h-4 w-16" />
+-                                    </th>
+-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+-                                        <Skeleton className="h-4 w-16" />
+-                                    </th>
+-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+-                                        <Skeleton className="h-4 w-24" />
+-                                    </th>
+-                                    <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">
+-                                        <Skeleton className="h-4 w-16 ml-auto" />
+-                                    </th>
+-                                </tr>
+-                            </thead>
+-                            <tbody>
+-                                {Array.from({ length: 5 }).map((_, i) => (
+-                                    <tr key={i} className="border-b transition-colors hover:bg-muted/50">
+-                                        <td className="p-4 align-middle">
+-                                            <Skeleton className="h-4 w-20" />
+-                                        </td>
+-                                        <td className="p-4 align-middle">
+-                                            <div className="flex flex-col gap-1">
+-                                                <Skeleton className="h-4 w-32" />
+-                                                <Skeleton className="h-3 w-40" />
+-                                            </div>
+-                                        </td>
+-                                        <td className="p-4 align-middle">
+-                                            <Skeleton className="h-4 w-12" />
+-                                        </td>
+-                                        <td className="p-4 align-middle">
+-                                            <Skeleton className="h-4 w-20" />
+-                                        </td>
+-                                        <td className="p-4 align-middle">
+-                                            <Skeleton className="h-6 w-24 rounded-full" />
+-                                        </td>
+-                                        <td className="p-4 align-middle">
+-                                            <Skeleton className="h-4 w-24" />
+-                                        </td>
+-                                        <td className="p-4 align-middle text-right">
+-                                            <Skeleton className="h-8 w-8 ml-auto" />
+-                                        </td>
+-                                    </tr>
+-                                ))}
+-                            </tbody>
+-                        </table>
+-                    </div>
+-                </div>
+-
+-                <div className="flex items-center justify-end space-x-2 py-4">
+-                    <Skeleton className="h-10 w-24" />
+-                    <Skeleton className="h-10 w-24" />
+-                </div>
+-            </div>
+-        </div>
+-    )
+-}
+diff --git a/app/admin/orders/page.tsx b/app/admin/orders/page.tsx
+deleted file mode 100644
+index 124facf..0000000
+--- a/app/admin/orders/page.tsx
++++ /dev/null
+@@ -1,146 +0,0 @@
+-import { Suspense } from 'react';
+-import { getOrders } from '@/features/orders/actions/admin-order.actions';
+-import { Button } from '@/components/ui/button';
+-import Link from 'next/link';
+-import { OrdersTableToolbar } from '@/features/orders/components/admin/orders-table-toolbar';
+-import { OrdersPagination } from '@/features/orders/components/admin/orders-pagination';
+-import { formatCurrency, formatDate } from '@/lib/utils';
+-import { Eye, MoreHorizontal } from 'lucide-react';
+-import {
+-    DropdownMenu,
+-    DropdownMenuContent,
+-    DropdownMenuItem,
+-    DropdownMenuLabel,
+-    DropdownMenuTrigger,
+-} from '@/components/ui/dropdown-menu';
+-
+-interface OrdersAdminPageProps {
+-    searchParams: Promise<{
+-        query?: string;
+-        status?: string;
+-        page?: string;
+-        limit?: string;
+-    }>;
+-}
+-
+-export default async function OrdersAdminPage({ searchParams }: OrdersAdminPageProps) {
+-    const params = await searchParams;
+-    const query = params.query;
+-    const status = params.status;
+-    const page = Number(params.page) || 1;
+-    const limit = Number(params.limit) || 10;
+-
+-    const { orders, pagination, error } = await getOrders({ query, status, page, limit });
+-
+-    if (error || !orders) {
+-        return (
+-            <div className="p-4 text-red-500">
+-                Error loading orders: {error}
+-            </div>
+-        );
+-    }
+-
+-    return (
+-        <div className="space-y-6">
+-            <div className="flex items-center justify-between">
+-                <div>
+-                    <h1 className="text-3xl font-bold tracking-tight">Pesanan</h1>
+-                    <p className="text-sm text-muted-foreground mt-1">Kelola pesanan</p>
+-                </div>
+-            </div>
+-            <div className="space-y-4">
+-                <Suspense fallback={<div>Memuat toolbar...</div>}>
+-                    <OrdersTableToolbar />
+-                </Suspense>
+-
+-                <div className="rounded-md border bg-card">
+-                    <div className="relative w-full overflow-auto">
+-                        <table className="w-full caption-bottom text-sm">
+-                            <thead className="[&_tr]:border-b">
+-                                <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">ID</th>
+-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Pelanggan</th>
+-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Jumlah Pesanan</th>
+-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Total</th>
+-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
+-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Tanggal</th>
+-                                    <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground"></th>
+-                                </tr>
+-                            </thead>
+-                            <tbody className="[&_tr:last-child]:border-0">
+-                                {orders.length === 0 ? (
+-                                    <tr>
+-                                        <td colSpan={7} className="p-4 text-center text-muted-foreground">
+-                                            Tidak ada pesanan ditemukan.
+-                                        </td>
+-                                    </tr>
+-                                ) : (
+-                                    orders.map((order: any) => (
+-                                        <tr key={order.id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+-                                            <td className="p-4 align-middle font-medium truncate max-w-[100px]" title={order.id}>
+-                                                {order.id.substring(0, 8)}...
+-                                            </td>
+-                                            <td className="p-4 align-middle">
+-                                                <div className="flex flex-col">
+-                                                    <span className="font-medium">{order.user.name}</span>
+-                                                    <span className="text-xs text-muted-foreground">{order.user.email}</span>
+-                                                </div>
+-                                            </td>
+-                                            <td className="p-4 align-middle">{order._count.items} produk</td>
+-                                            <td className="p-4 align-middle">
+-                                                {formatCurrency(order.total)}
+-                                            </td>
+-                                            <td className="p-4 align-middle">
+-                                                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${order.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+-                                                    order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-800' :
+-                                                        order.status === 'PAID' ? 'bg-yellow-100 text-yellow-800' :
+-                                                            order.status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
+-                                                                'bg-gray-100 text-gray-800'
+-                                                    }`}>
+-                                                    {order.status}
+-                                                </span>
+-                                            </td>
+-                                            <td className="p-4 align-middle text-muted-foreground">
+-                                                {formatDate(order.createdAt)}
+-                                            </td>
+-                                            <td className="p-4 align-middle text-right">
+-                                                <DropdownMenu>
+-                                                    <DropdownMenuTrigger asChild>
+-                                                        <Button variant="ghost" className="h-8 w-8 p-0">
+-                                                            <span className="sr-only">Open menu</span>
+-                                                            <MoreHorizontal className="h-4 w-4" />
+-                                                        </Button>
+-                                                    </DropdownMenuTrigger>
+-                                                    <DropdownMenuContent align="end">
+-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+-                                                        <DropdownMenuItem asChild>
+-                                                            <Link href={`/admin/orders/${order.id}`}>
+-                                                                <Eye className="mr-2 h-4 w-4" />
+-                                                                Detail
+-                                                            </Link>
+-                                                        </DropdownMenuItem>
+-                                                    </DropdownMenuContent>
+-                                                </DropdownMenu>
+-                                            </td>
+-                                        </tr>
+-                                    ))
+-                                )}
+-                            </tbody>
+-                        </table>
+-                    </div>
+-                </div>
+-
+-                {pagination && (
+-                    <Suspense fallback={<div>Loading pagination...</div>}>
+-                        <OrdersPagination
+-                            total={pagination.total}
+-                            pages={pagination.pages}
+-                            page={pagination.page}
+-                            limit={pagination.limit}
+-                        />
+-                    </Suspense>
+-                )}
+-            </div>
+-        </div>
+-    );
+-}
+\ No newline at end of file
+diff --git a/components/layouts/customer/footer.tsx b/components/layouts/customer/footer.tsx
+index 9973278..04d9b4d 100644
+--- a/components/layouts/customer/footer.tsx
++++ b/components/layouts/customer/footer.tsx
+@@ -1,7 +1,7 @@
+ import Link from 'next/link';
+ import { Printer, Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+-
+-export function Footer() {
++export function Footer({ settings }: { settings?: Record<string, any> | null }) {
++    const storeName = settings?.storeName || 'Foman Kreasi';
+     return (
+         <footer className="w-full border-t bg-background/50 backdrop-blur-sm">
+             <div className="container py-12 md:py-20">
+@@ -11,7 +11,7 @@ export function Footer() {
+                             <div className="bg-primary/10 p-2 rounded-lg group-hover:bg-primary/20 transition-colors">
+                                 <Printer className="h-6 w-6 text-primary" />
+                             </div>
+-                            <span className="text-xl font-bold tracking-tight">Foman Kreasi</span>
++                            <span className="text-xl font-bold tracking-tight">{storeName}</span>
+                         </Link>
+                         <p className="text-sm text-muted-foreground leading-relaxed">
+                             Solusi satu pintu untuk semua kebutuhan percetakan berkualitas tinggi Anda.
+@@ -40,18 +40,24 @@ export function Footer() {
+                     <div>
+                         <h3 className="font-semibold mb-4">Hubungi Kami</h3>
+                         <ul className="space-y-3 text-sm text-muted-foreground">
+-                            <li className="flex items-center gap-2">
+-                                <MapPin className="h-4 w-4" />
+-                                <span>123 Printing Street, City, Country</span>
+-                            </li>
+-                            <li className="flex items-center gap-2">
+-                                <Phone className="h-4 w-4" />
+-                                <span>+1 234 567 8900</span>
+-                            </li>
+-                            <li className="flex items-center gap-2">
+-                                <Mail className="h-4 w-4" />
+-                                <span>hello@foman.com</span>
+-                            </li>
++                            {settings?.contactAddress && (
++                                <li className="flex items-center gap-2">
++                                    <MapPin className="h-4 w-4 shrink-0" />
++                                    <span>{settings.contactAddress}</span>
++                                </li>
++                            )}
++                            {settings?.contactPhone && (
++                                <li className="flex items-center gap-2">
++                                    <Phone className="h-4 w-4 shrink-0" />
++                                    <span>{settings.contactPhone}</span>
++                                </li>
++                            )}
++                            {settings?.contactEmail && (
++                                <li className="flex items-center gap-2">
++                                    <Mail className="h-4 w-4 shrink-0" />
++                                    <span>{settings.contactEmail}</span>
++                                </li>
++                            )}
+                         </ul>
+                         <div className="flex gap-4 mt-4">
+                             <Link href="#" className="text-muted-foreground hover:text-primary">
+@@ -68,7 +74,7 @@ export function Footer() {
+                 </div>
+ 
+                 <div className="border-t mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+-                    <p>┬⌐ {new Date().getFullYear()} Foman Kreasi. Hak cipta dilindungi.</p>
++                    <p>┬⌐ {new Date().getFullYear()} {storeName}. Hak cipta dilindungi.</p>
+                     <div className="flex gap-6">
+                         <Link href="/privacy" className="hover:text-primary">Kebijakan Privasi</Link>
+                         <Link href="/terms" className="hover:text-primary">Syarat & Ketentuan</Link>
+diff --git a/components/layouts/customer/navbar.tsx b/components/layouts/customer/navbar.tsx
+index 2483cb9..ad043ff 100644
+--- a/components/layouts/customer/navbar.tsx
++++ b/components/layouts/customer/navbar.tsx
+@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
+ import { Button } from '@/components/ui/button';
+ import { SearchInput } from '@/components/layouts/customer/search-input';
+ import { ModeToggle } from '@/components/mode-toggle';
+-import { Menu, Printer, Search, ShoppingCart, User } from 'lucide-react';
++import { Menu, Printer, Search, User } from 'lucide-react';
+ import { NotificationBell } from '@/features/notifications/components/notification-bell';
+ import { useState, useEffect, Suspense } from 'react';
+ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+@@ -19,7 +19,6 @@ import {
+     DropdownMenuTrigger,
+ } from '@/components/ui/dropdown-menu';
+ 
+-import { useCart } from '@/features/cart/context/cart.context';
+ import Image from 'next/image';
+ 
+ export function Navbar({ storeName }: { storeName?: string }) {
+@@ -27,11 +26,9 @@ export function Navbar({ storeName }: { storeName?: string }) {
+     const [mounted, setMounted] = useState(false);
+     const [showSearch, setShowSearch] = useState(false);
+     const { data: session } = useSession();
+-    const { cartCount, setIsOpen: setCartOpen, clearCart } = useCart();
+     const pathname = usePathname();
+ 
+     const handleLogout = () => {
+-        clearCart();
+         signOut();
+     };
+ 
+@@ -107,22 +104,6 @@ export function Navbar({ storeName }: { storeName?: string }) {
+                             <ModeToggle />
+                         </div>
+ 
+-                        {/* Cart Button */}
+-                        <Button
+-                            variant="ghost"
+-                            size="icon"
+-                            className="relative h-8 w-8 sm:h-10 sm:w-10"
+-                            onClick={() => setCartOpen(true)}
+-                        >
+-                            <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
+-                            {cartCount > 0 && (
+-                                <span className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-primary text-[9px] sm:text-[10px] font-bold text-primary-foreground flex items-center justify-center">
+-                                    {cartCount > 99 ? '99+' : cartCount}
+-                                </span>
+-                            )}
+-                            <span className="sr-only">Keranjang</span>
+-                        </Button>
+-
+                         {/* Desktop User Menu */}
+                         <div className="hidden lg:flex items-center gap-2">
+                             {!mounted ? (
+@@ -172,11 +153,6 @@ export function Navbar({ storeName }: { storeName?: string }) {
+                                             </Link>
+                                         </DropdownMenuItem>
+ 
+-                                        <DropdownMenuItem asChild>
+-                                            <Link href="/orders" className="cursor-pointer">
+-                                                Pesanan Saya
+-                                            </Link>
+-                                        </DropdownMenuItem>
+                                         <DropdownMenuSeparator />
+                                         <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
+                                             Keluar
+@@ -276,13 +252,6 @@ export function Navbar({ storeName }: { storeName?: string }) {
+                                                             Dashboard Admin
+                                                         </Link>
+                                                     )}
+-                                                    <Link
+-                                                        href="/orders"
+-                                                        onClick={() => setIsOpen(false)}
+-                                                        className={`text-sm font-medium hover:bg-accent hover:text-accent-foreground rounded-md px-3 py-2 transition-colors ${pathname?.startsWith('/orders') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'}`}
+-                                                    >
+-                                                        Pesanan Saya
+-                                                    </Link>
+                                                     <Link
+                                                         href="/profile"
+                                                         onClick={() => setIsOpen(false)}
+diff --git a/features/cart/components/add-to-cart-button.tsx b/features/cart/components/add-to-cart-button.tsx
+deleted file mode 100644
+index aaac6c7..0000000
+--- a/features/cart/components/add-to-cart-button.tsx
++++ /dev/null
+@@ -1,36 +0,0 @@
+-'use client';
+-
+-import { Button } from '@/components/ui/button';
+-import { ShoppingCart } from 'lucide-react';
+-import { useCart } from '@/features/cart/context/cart.context';
+-import { Product, ProductPicture } from '@/app/generated/prisma/client';
+-import toast from 'react-hot-toast';
+-
+-import { CartProduct } from '@/types/product';
+-
+-export interface AddToCartButtonProps {
+-    product: CartProduct;
+-    disabled?: boolean;
+-    className?: string;
+-}
+-
+-export function AddToCartButton({ product, disabled = false, className }: AddToCartButtonProps) {
+-    const { addItem } = useCart();
+-
+-    const handleAddToCart = () => {
+-        addItem(product);
+-        toast.success('Ditambahkan ke keranjang');
+-    };
+-
+-    return (
+-        <Button
+-            onClick={handleAddToCart}
+-            className={`w-full gap-2 ${className || ''}`}
+-            size="lg"
+-            disabled={disabled}
+-        >
+-            <ShoppingCart className="w-5 h-5" />
+-            Tambah ke Keranjang
+-        </Button>
+-    );
+-}
+diff --git a/features/cart/components/cart-sheet.tsx b/features/cart/components/cart-sheet.tsx
+deleted file mode 100644
+index 30888ea..0000000
+--- a/features/cart/components/cart-sheet.tsx
++++ /dev/null
+@@ -1,189 +0,0 @@
+-'use client';
+-
+-import Image from 'next/image';
+-import Link from 'next/link';
+-
+-
+-import {
+-    Sheet,
+-    SheetContent,
+-    SheetHeader,
+-    SheetTitle,
+-    SheetFooter
+-} from '@/components/ui/sheet';
+-
+-import { Button } from '@/components/ui/button';
+-import { ScrollArea } from '@/components/ui/scroll-area';
+-
+-import {
+-    Minus,
+-    Plus,
+-    Trash2,
+-    ShoppingBag
+-} from 'lucide-react';
+-import { formatCurrency } from '@/lib/utils';
+-import { useCart } from '../context/cart.context';
+-
+-export function CartSheet() {
+-    const {
+-        items,
+-        removeItem,
+-        updateQuantity,
+-        cartTotal,
+-        isOpen,
+-        setIsOpen
+-    } = useCart();
+-
+-
+-    return (
+-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+-            <SheetContent className="flex w-full px-4 flex-col pr-0 sm:max-w-lg" aria-describedby={undefined}>
+-
+-                {/* Header */}
+-                <SheetHeader className="px-1">
+-                    <SheetTitle>
+-                        Keranjang Belanja ({items.length})
+-                    </SheetTitle>
+-                </SheetHeader>
+-
+-                {/* If cart has items */}
+-                {items.length > 0 ? (
+-                    <>
+-                        {/* Cart Items Scroll Area */}
+-                        <ScrollArea className="flex-1 -mx-6 px-6">
+-                            <div className="flex flex-col gap-4 py-4">
+-                                {items.map((item) => (
+-                                    <div
+-                                        key={item.id}
+-                                        className="flex gap-4"
+-                                    >
+-                                        {/* Product Image */}
+-                                        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border bg-secondary/20">
+-                                            {item.product.pictures[0]?.imageUrl ? (
+-                                                <Image
+-                                                    src={item.product.pictures[0].imageUrl}
+-                                                    alt={item.product.name}
+-                                                    fill
+-                                                    sizes="(max-width: 640px) 80px, (max-width: 1024px) 100px, 120px"
+-                                                    className="object-cover"
+-                                                />
+-                                            ) : (
+-                                                <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+-                                                    Tanpa Gmb
+-                                                </div>
+-                                            )}
+-                                        </div>
+-
+-                                        {/* Product Info */}
+-                                        <div className="flex flex-1 flex-col justify-between px-4">
+-
+-                                            {/* Name & Price */}
+-                                            <div className="flex justify-between gap-2">
+-                                                <div className="flex flex-col">
+-                                                    <h3 className="font-medium line-clamp-2">
+-                                                        {item.product.name}
+-                                                    </h3>
+-                                                    {item.product.selectedVariant && (
+-                                                        <span className="text-sm text-muted-foreground mt-0.5">
+-                                                            Varian: {item.product.selectedVariant.name}
+-                                                        </span>
+-                                                    )}
+-                                                </div>
+-
+-                                                <p className="font-bold shrink-0">
+-                                                    {formatCurrency((item.product.selectedVariant?.price || item.product.minPrice || 0) * item.quantity)}
+-                                                </p>
+-                                            </div>
+-
+-                                            {/* Quantity & Remove */}
+-                                            <div className="flex items-center justify-between mt-2">
+-                                                {/* Quantity Controls */}
+-                                                <div className="flex items-center gap-2">
+-                                                    <Button
+-                                                        variant="outline"
+-                                                        size="icon"
+-                                                        className="h-8 w-8"
+-                                                        onClick={() => updateQuantity(
+-                                                            item.id,
+-                                                            item.quantity - 1
+-                                                        )}
+-                                                    >
+-                                                        <Minus className="h-3 w-3" />
+-                                                    </Button>
+-
+-                                                    <span className="w-8 text-center text-sm">
+-                                                        {item.quantity}
+-                                                    </span>
+-
+-                                                    <Button
+-                                                        variant="outline"
+-                                                        size="icon"
+-                                                        className="h-8 w-8"
+-                                                        onClick={() => updateQuantity(
+-                                                            item.id,
+-                                                            item.quantity + 1
+-                                                        )}
+-                                                    >
+-                                                        <Plus className="h-3 w-3" />
+-                                                    </Button>
+-                                                </div>
+-
+-                                                {/* Remove Button */}
+-                                                <Button
+-                                                    variant="ghost"
+-                                                    size="icon"
+-                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+-                                                    onClick={() => removeItem(item.id)}
+-                                                >
+-                                                    <Trash2 className="h-4 w-4" />
+-                                                </Button>
+-                                            </div>
+-                                        </div>
+-                                    </div>
+-                                ))}
+-                            </div>
+-                        </ScrollArea>
+-
+-                        {/* Footer: Total + Checkout */}
+-                        <div className="space-y-4 pr-6">
+-                            <div className="flex items-center justify-between border-t pt-4">
+-                                <span className="text-base font-medium">Total</span>
+-                                <span className="text-xl font-bold">
+-                                    {formatCurrency(cartTotal)}
+-                                </span>
+-                            </div>
+-
+-                            <SheetFooter>
+-                                <Button className="w-full" size="lg" asChild>
+-                                    <Link
+-                                        href="/checkout"
+-                                        onClick={() => setIsOpen(false)}
+-                                    >
+-                                        Pembayaran
+-                                    </Link>
+-                                </Button>
+-                            </SheetFooter>
+-                        </div>
+-                    </>
+-                ) : (
+-                    /* Empty Cart */
+-                    <div className="flex h-full flex-col items-center justify-center space-y-2">
+-                        <ShoppingBag className="h-12 w-12 text-muted-foreground" />
+-
+-                        <span className="text-lg font-medium text-muted-foreground">
+-                            Keranjang Anda kosong
+-                        </span>
+-
+-                        <Button
+-                            variant="link"
+-                            asChild
+-                            onClick={() => setIsOpen(false)}
+-                        >
+-                            <Link href="/products">Lanjut Belanja</Link>
+-                        </Button>
+-                    </div>
+-                )}
+-            </SheetContent>
+-        </Sheet>
+-    );
+-}
+diff --git a/features/cart/context/cart.context.tsx b/features/cart/context/cart.context.tsx
+deleted file mode 100644
+index 61d3187..0000000
+--- a/features/cart/context/cart.context.tsx
++++ /dev/null
+@@ -1,125 +0,0 @@
+-'use client';
+-
+-import { createContext, useContext, useEffect, useState } from 'react';
+-import { CartProduct } from '@/types/product';
+-
+-export interface CartItem {
+-    id: string;
+-    product: CartProduct;
+-    quantity: number;
+-}
+-
+-interface CartContextType {
+-    items: CartItem[];
+-    addItem: (product: CartProduct) => void;
+-    removeItem: (cartItemId: string) => void;
+-    updateQuantity: (cartItemId: string, quantity: number) => void;
+-    clearCart: () => void;
+-    cartCount: number;
+-    cartTotal: number;
+-    isOpen: boolean;
+-    setIsOpen: (open: boolean) => void;
+-}
+-
+-const CartContext = createContext<CartContextType | undefined>(undefined);
+-
+-export function CartProvider({ children }: { children: React.ReactNode }) {
+-    const [items, setItems] = useState<CartItem[]>([]);
+-    const [isOpen, setIsOpen] = useState(false);
+-    const [isInitialized, setIsInitialized] = useState(false);
+-
+-    // Load cart from local storage on mount
+-    useEffect(() => {
+-        const savedCart = localStorage.getItem('cart');
+-        if (savedCart) {
+-            try {
+-                setItems(JSON.parse(savedCart));
+-            } catch (e) {
+-                console.error('Failed to parse cart from local storage', e);
+-            }
+-        }
+-        setIsInitialized(true);
+-    }, []);
+-
+-    useEffect(() => {
+-        if (isInitialized) {
+-            localStorage.setItem('cart', JSON.stringify(items));
+-        }
+-    }, [items, isInitialized]);
+-
+-    // Generate unique ID for cart item
+-    const getCartItemId = (product: CartProduct) => {
+-        return product.selectedVariant
+-            ? `${product.id}-${product.selectedVariant.id}`
+-            : product.id;
+-    };
+-
+-    const addItem = (product: CartProduct) => {
+-        const cartItemId = getCartItemId(product);
+-
+-        setItems((prev) => {
+-            const existing = prev.find((item) => item.id === cartItemId);
+-            if (existing) {
+-                return prev.map((item) =>
+-                    item.id === cartItemId
+-                        ? { ...item, quantity: item.quantity + 1 }
+-                        : item
+-                );
+-            }
+-            return [...prev, { id: cartItemId, product, quantity: 1 }];
+-        });
+-        setIsOpen(true);
+-    };
+-
+-    const removeItem = (cartItemId: string) => {
+-        setItems((prev) => prev.filter((item) => item.id !== cartItemId));
+-    };
+-
+-    const updateQuantity = (cartItemId: string, quantity: number) => {
+-        if (quantity < 1) {
+-            removeItem(cartItemId);
+-            return;
+-        }
+-        setItems((prev) =>
+-            prev.map((item) =>
+-                item.id === cartItemId ? { ...item, quantity } : item
+-            )
+-        );
+-    };
+-
+-    const clearCart = () => {
+-        setItems([]);
+-    };
+-
+-    const cartCount = items.reduce((total, item) => total + item.quantity, 0);
+-    const cartTotal = items.reduce(
+-        (total, item) => total + (item.product.selectedVariant?.price || item.product.minPrice || 0) * item.quantity,
+-        0
+-    );
+-
+-    return (
+-        <CartContext.Provider
+-            value={{
+-                items,
+-                addItem,
+-                removeItem,
+-                updateQuantity,
+-                clearCart,
+-                cartCount,
+-                cartTotal,
+-                isOpen,
+-                setIsOpen,
+-            }}
+-        >
+-            {children}
+-        </CartContext.Provider>
+-    );
+-}
+-
+-export function useCart() {
+-    const context = useContext(CartContext);
+-    if (context === undefined) {
+-        throw new Error('useCart must be used within a CartProvider');
+-    }
+-    return context;
+-}
+diff --git a/features/dashboard/services/dashboard.service.ts b/features/dashboard/services/dashboard.service.ts
+index 1d80409..d2a1121 100644
+--- a/features/dashboard/services/dashboard.service.ts
++++ b/features/dashboard/services/dashboard.service.ts
+@@ -1,69 +1,37 @@
+ import prisma from "@/lib/prisma";
+ 
+ export async function getDashboardStatsService() {
+-  const now = new Date();
+-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+-  const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+ 
+   const [
+-    totalRevenue,
+-    totalOrders,
+     totalProducts,
++    totalCategories,
+     totalCustomers,
+-    recentOrders,
++    outOfStockVariants,
+   ] = await Promise.all([
+-    // Total Revenue Bulan Ini
+-    prisma.order.aggregate({
+-      _sum: {
+-        total: true,
+-      },
+-      where: {
+-        status: {
+-          in: ["PAID", "SHIPPED", "COMPLETED"],
+-        },
+-        createdAt: {
+-          gte: startOfMonth,
+-          lt: startOfNextMonth,
+-        },
+-      },
+-    }),
+-
+-    // Total Orders
+-    prisma.order.count({
+-      where: {
+-        createdAt: {
+-          gte: startOfMonth,
+-          lt: startOfNextMonth,
+-        },
+-      },
+-    }),
+-
+-    // Total Products
+     prisma.product.count(),
+-
+-    // Total Customers
++    prisma.category.count(),
+     prisma.user.count({
+       where: {
+         role: "CUSTOMER",
+       },
+     }),
+ 
+-    // Recent Orders
+-    prisma.order.findMany({
+-      take: 4,
++    prisma.productVariant.findMany({
++      where: {
++        stock: {
++          lte: 0,
++        },
++      },
++      take: 5,
+       orderBy: {
+-        createdAt: "desc",
++        updatedAt: "desc",
+       },
+       select: {
+         id: true,
+-        total: true,
+-        status: true,
+-        createdAt: true,
+-        user: {
++        name: true,
++        product: {
+           select: {
+             name: true,
+-            email: true,
+-            profileUrl: true,
+           },
+         },
+       },
+@@ -71,10 +39,9 @@ export async function getDashboardStatsService() {
+   ]);
+ 
+   return {
+-    totalRevenue: totalRevenue._sum.total || 0,
+-    totalOrders,
+     totalProducts,
++    totalCategories,
+     totalCustomers,
+-    recentOrders,
++    outOfStockVariants,
+   };
+ }
+diff --git a/features/orders/actions/admin-order.actions.ts b/features/orders/actions/admin-order.actions.ts
+deleted file mode 100644
+index d896dda..0000000
+--- a/features/orders/actions/admin-order.actions.ts
++++ /dev/null
+@@ -1,60 +0,0 @@
+-"use server";
+-
+-import { z } from "zod";
+-import { ActionResult } from "@/types";
+-import { revalidatePath } from "next/cache";
+-import { updateOrderStatusSchema } from "../schemas/order.schema";
+-import { 
+-  getOrdersService, 
+-  getOrderByIdService, 
+-  updateOrderStatusService 
+-} from "../services/order.service";
+-
+-export async function getOrders(params: {
+-  query?: string;
+-  status?: string;
+-  page?: number;
+-  limit?: number;
+-}) {
+-  try {
+-    const result = await getOrdersService(params);
+-    return {
+-      success: true,
+-      orders: result.orders,
+-      pagination: result.pagination,
+-    };
+-  } catch (error: any) {
+-    return { success: false, error: error.message || "Failed to fetch orders" };
+-  }
+-}
+-
+-export async function getOrderById(id: string) {
+-  try {
+-    const order = await getOrderByIdService(id);
+-    return { success: true, order };
+-  } catch (error: any) {
+-    return { success: false, error: error.message || "Failed to fetch order" };
+-  }
+-}
+-
+-export async function updateOrderStatus(
+-  input: z.infer<typeof updateOrderStatusSchema>
+-): Promise<ActionResult<void>> {
+-  const parsed = updateOrderStatusSchema.safeParse(input);
+-  if (!parsed.success) {
+-    return {
+-      success: false,
+-      error: "Validation failed",
+-      fieldErrors: parsed.error.flatten().fieldErrors,
+-    };
+-  }
+-
+-  try {
+-    await updateOrderStatusService(parsed.data.id, parsed.data.status);
+-    revalidatePath("/admin/orders");
+-    revalidatePath(`/admin/orders/${parsed.data.id}`);
+-    return { success: true, data: undefined };
+-  } catch (error: any) {
+-    return { success: false, error: error.message || "Failed to update order status" };
+-  }
+-}
+diff --git a/features/orders/actions/order.actions.ts b/features/orders/actions/order.actions.ts
+deleted file mode 100644
+index 104cf4b..0000000
+--- a/features/orders/actions/order.actions.ts
++++ /dev/null
+@@ -1,44 +0,0 @@
+-"use server";
+-
+-import { z } from "zod";
+-import { ActionResult } from "@/types";
+-import { revalidatePath } from "next/cache";
+-import { createOrderSchema } from "../schemas/order.schema";
+-import { createOrderService, getUserOrdersService } from "../services/order.service";
+-
+-export async function createOrder(
+-  input: z.infer<typeof createOrderSchema>
+-): Promise<ActionResult<any>> {
+-  const parsed = createOrderSchema.safeParse(input);
+-  if (!parsed.success) {
+-    return {
+-      success: false,
+-      error: "Validation failed",
+-      fieldErrors: parsed.error.flatten().fieldErrors,
+-    };
+-  }
+-
+-  try {
+-    const result = await createOrderService(parsed.data);
+-    
+-    try {
+-      revalidatePath("/orders");
+-    } catch (e) {
+-      console.warn("Could not revalidate path:", e);
+-    }
+-    
+-    return { success: true, data: result };
+-  } catch (error: any) {
+-    return { success: false, error: error.message || "Gagal membuat pesanan" };
+-  }
+-}
+-
+-export async function getUserOrders(userId: string, statuses?: string[]) {
+-  try {
+-    const orders = await getUserOrdersService(userId, statuses);
+-    return orders;
+-  } catch (error) {
+-    console.error("Error fetching user orders:", error);
+-    return [];
+-  }
+-}
+diff --git a/features/orders/components/admin/order-status-updater.tsx b/features/orders/components/admin/order-status-updater.tsx
+deleted file mode 100644
+index c197e5a..0000000
+--- a/features/orders/components/admin/order-status-updater.tsx
++++ /dev/null
+@@ -1,50 +0,0 @@
+-'use client';
+-
+-import { updateOrderStatus } from '@/features/orders/actions/admin-order.actions';
+-import {
+-    Select,
+-    SelectContent,
+-    SelectItem,
+-    SelectTrigger,
+-    SelectValue,
+-} from '@/components/ui/select';
+-import { useState, useTransition } from 'react';
+-
+-interface OrderStatusUpdaterProps {
+-    orderId: string;
+-    currentStatus: string;
+-}
+-
+-export function OrderStatusUpdater({ orderId, currentStatus }: OrderStatusUpdaterProps) {
+-    const [status, setStatus] = useState(currentStatus);
+-    const [isPending, startTransition] = useTransition();
+-
+-    const handleStatusChange = (newStatus: string) => {
+-        setStatus(newStatus);
+-        startTransition(async () => {
+-            await updateOrderStatus({ id: orderId, status: newStatus as any });
+-        });
+-    };
+-
+-    return (
+-        <div className="flex items-center gap-2">
+-            <span className="text-sm font-medium">Status:</span>
+-            <Select
+-                disabled={isPending}
+-                value={status}
+-                onValueChange={handleStatusChange}
+-            >
+-                <SelectTrigger className="w-[180px]">
+-                    <SelectValue placeholder="Select status" />
+-                </SelectTrigger>
+-                <SelectContent>
+-                    <SelectItem value="PENDING">Pending</SelectItem>
+-                    <SelectItem value="PAID">Paid</SelectItem>
+-                    <SelectItem value="SHIPPED">Shipped</SelectItem>
+-                    <SelectItem value="COMPLETED">Completed</SelectItem>
+-                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
+-                </SelectContent>
+-            </Select>
+-        </div>
+-    );
+-}
+diff --git a/features/orders/components/admin/orders-pagination.tsx b/features/orders/components/admin/orders-pagination.tsx
+deleted file mode 100644
+index 6e77fd3..0000000
+--- a/features/orders/components/admin/orders-pagination.tsx
++++ /dev/null
+@@ -1,107 +0,0 @@
+-'use client';
+-
+-import { Button } from '@/components/ui/button';
+-import {
+-    Select,
+-    SelectContent,
+-    SelectItem,
+-    SelectTrigger,
+-    SelectValue,
+-} from '@/components/ui/select';
+-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+-
+-interface OrdersPaginationProps {
+-    total: number;
+-    pages: number;
+-    page: number;
+-    limit: number;
+-}
+-
+-export function OrdersPagination({ total, pages, page, limit }: OrdersPaginationProps) {
+-    const router = useRouter();
+-    const pathname = usePathname();
+-    const searchParams = useSearchParams();
+-
+-    const createPageURL = (pageNumber: number | string) => {
+-        const params = new URLSearchParams(searchParams);
+-        params.set('page', pageNumber.toString());
+-        return `${pathname}?${params.toString()}`;
+-    };
+-
+-    const handleLimitChange = (value: string) => {
+-        const params = new URLSearchParams(searchParams);
+-        params.set('limit', value);
+-        params.set('page', '1');
+-        router.replace(`${pathname}?${params.toString()}`);
+-    };
+-
+-    return (
+-        <div className="flex items-center justify-between px-2">
+-            <div className="flex-1 text-sm text-muted-foreground">
+-                {total} total pesanan
+-            </div>
+-            <div className="flex items-center space-x-6 lg:space-x-8">
+-                <div className="flex items-center space-x-2">
+-                    <p className="text-sm font-medium">Baris per halaman</p>
+-                    <Select
+-                        value={limit.toString()}
+-                        onValueChange={handleLimitChange}
+-                    >
+-                        <SelectTrigger className="h-8 w-[70px]">
+-                            <SelectValue placeholder={limit.toString()} />
+-                        </SelectTrigger>
+-                        <SelectContent side="top">
+-                            {[10, 20, 30, 40, 50].map((pageSize) => (
+-                                <SelectItem key={pageSize} value={`${pageSize}`}>
+-                                    {pageSize}
+-                                </SelectItem>
+-                            ))}
+-                        </SelectContent>
+-                    </Select>
+-                </div>
+-                <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+-                    Halaman {page} dari {pages}
+-                </div>
+-                <div className="flex items-center space-x-2">
+-                    <Button
+-                        variant="outline"
+-                        className="hidden h-8 w-8 p-0 lg:flex"
+-                        onClick={() => router.push(createPageURL(1))}
+-                        disabled={page <= 1}
+-                    >
+-                        <span className="sr-only">Ke halaman pertama</span>
+-                        <ChevronsLeft className="h-4 w-4" />
+-                    </Button>
+-                    <Button
+-                        variant="outline"
+-                        className="h-8 w-8 p-0"
+-                        onClick={() => router.push(createPageURL(page - 1))}
+-                        disabled={page <= 1}
+-                    >
+-                        <span className="sr-only">Ke halaman sebelumnya</span>
+-                        <ChevronLeft className="h-4 w-4" />
+-                    </Button>
+-                    <Button
+-                        variant="outline"
+-                        className="h-8 w-8 p-0"
+-                        onClick={() => router.push(createPageURL(page + 1))}
+-                        disabled={page >= pages}
+-                    >
+-                        <span className="sr-only">Ke halaman berikutnya</span>
+-                        <ChevronRight className="h-4 w-4" />
+-                    </Button>
+-                    <Button
+-                        variant="outline"
+-                        className="hidden h-8 w-8 p-0 lg:flex"
+-                        onClick={() => router.push(createPageURL(pages))}
+-                        disabled={page >= pages}
+-                    >
+-                        <span className="sr-only">Ke halaman terakhir</span>
+-                        <ChevronsRight className="h-4 w-4" />
+-                    </Button>
+-                </div>
+-            </div>
+-        </div>
+-    );
+-}
+diff --git a/features/orders/components/admin/orders-table-toolbar.tsx b/features/orders/components/admin/orders-table-toolbar.tsx
+deleted file mode 100644
+index d134538..0000000
+--- a/features/orders/components/admin/orders-table-toolbar.tsx
++++ /dev/null
+@@ -1,77 +0,0 @@
+-'use client';
+-
+-import { Input } from '@/components/ui/input';
+-import {
+-    Select,
+-    SelectContent,
+-    SelectItem,
+-    SelectTrigger,
+-    SelectValue,
+-} from '@/components/ui/select';
+-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+-import { useTransition } from 'react';
+-import { useDebouncedCallback } from 'use-debounce';
+-
+-export function OrdersTableToolbar() {
+-    const router = useRouter();
+-    const pathname = usePathname();
+-    const searchParams = useSearchParams();
+-    const [isPending, startTransition] = useTransition();
+-
+-    const handleSearch = useDebouncedCallback((term: string) => {
+-        const params = new URLSearchParams(searchParams);
+-        params.set('page', '1');
+-        if (term) {
+-            params.set('query', term);
+-        } else {
+-            params.delete('query');
+-        }
+-        startTransition(() => {
+-            router.replace(`${pathname}?${params.toString()}`);
+-        });
+-    }, 300);
+-
+-    const handleStatusChange = (status: string) => {
+-        const params = new URLSearchParams(searchParams);
+-        params.set('page', '1');
+-        if (status && status !== 'ALL') {
+-            params.set('status', status);
+-        } else {
+-            params.delete('status');
+-        }
+-        startTransition(() => {
+-            router.replace(`${pathname}?${params.toString()}`);
+-        });
+-    };
+-
+-    return (
+-        <div className="flex items-center justify-between">
+-            <div className="flex flex-1 items-center space-x-2">
+-                <Input
+-                    placeholder="Filter pesanan..."
+-                    className="max-w-xs"
+-                    defaultValue={searchParams.get('query')?.toString()}
+-                    onChange={(e) => handleSearch(e.target.value)}
+-                // className="h-8 w-[150px] lg:w-[250px]"
+-                />
+-                <Select
+-                    defaultValue={searchParams.get('status')?.toString() || 'ALL'}
+-                    onValueChange={handleStatusChange}
+-                >
+-                    <SelectTrigger className="h-8 w-[150px]">
+-                        <SelectValue placeholder="Status" />
+-                    </SelectTrigger>
+-                    <SelectContent>
+-                        <SelectItem value="ALL">Semua Status</SelectItem>
+-                        <SelectItem value="PENDING">Tertunda</SelectItem>
+-                        <SelectItem value="PAID">Dibayar</SelectItem>
+-                        <SelectItem value="SHIPPED">Dikirim</SelectItem>
+-                        <SelectItem value="COMPLETED">Selesai</SelectItem>
+-                        <SelectItem value="CANCELLED">Dibatalkan</SelectItem>
+-
+-                    </SelectContent>
+-                </Select>
+-            </div>
+-        </div>
+-    );
+-}
+diff --git a/features/orders/components/customer/order-toolbar.tsx b/features/orders/components/customer/order-toolbar.tsx
+deleted file mode 100644
+index 2835655..0000000
+--- a/features/orders/components/customer/order-toolbar.tsx
++++ /dev/null
+@@ -1,44 +0,0 @@
+-'use client';
+-
+-import Link from 'next/link';
+-import { usePathname } from 'next/navigation';
+-import { cn } from '@/lib/utils';
+-import { Button } from '@/components/ui/button';
+-import { Clock, History } from 'lucide-react';
+-
+-export function OrderToolbar() {
+-    const pathname = usePathname();
+-
+-    return (
+-        <div className="flex items-center gap-2 mb-6 p-1 bg-muted/50 rounded-lg w-fit">
+-            <Button
+-                asChild
+-                variant="ghost"
+-                size="sm"
+-                className={cn(
+-                    "gap-2 hover:bg-background hover:text-foreground",
+-                    pathname === '/orders' && "bg-background text-foreground shadow-sm font-medium"
+-                )}
+-            >
+-                <Link href="/orders">
+-                    <Clock className="h-4 w-4" />
+-                    Sedang Berjalan
+-                </Link>
+-            </Button>
+-            <Button
+-                asChild
+-                variant="ghost"
+-                size="sm"
+-                className={cn(
+-                    "gap-2 hover:bg-background hover:text-foreground",
+-                    pathname === '/orders/history' && "bg-background text-foreground shadow-sm font-medium"
+-                )}
+-            >
+-                <Link href="/orders/history">
+-                    <History className="h-4 w-4" />
+-                    Riwayat Pesanan
+-                </Link>
+-            </Button>
+-        </div>
+-    );
+-}
+diff --git a/features/orders/schemas/order.schema.ts b/features/orders/schemas/order.schema.ts
+deleted file mode 100644
+index 140664c..0000000
+--- a/features/orders/schemas/order.schema.ts
++++ /dev/null
+@@ -1,25 +0,0 @@
+-import { z } from "zod";
+-
+-export const orderItemSchema = z.object({
+-  productId: z.string().min(1, "ID Produk tidak boleh kosong"),
+-  productVariantId: z.string().optional(),
+-  quantity: z.number().int().positive("Kuantitas minimal 1"),
+-});
+-
+-export type OrderItemInput = z.infer<typeof orderItemSchema>;
+-
+-export const createOrderSchema = z.object({
+-  userId: z.string().min(1, "ID User tidak boleh kosong"),
+-  items: z.array(orderItemSchema).min(1, "Pesanan harus berisi minimal 1 produk"),
+-});
+-
+-export type CreateOrderInput = z.infer<typeof createOrderSchema>;
+-
+-export const updateOrderStatusSchema = z.object({
+-  id: z.string().min(1, "ID Pesanan tidak boleh kosong"),
+-  status: z.enum(["PENDING", "PAID", "PACKING", "SHIPPED", "COMPLETED", "CANCELLED"], {
+-    message: "Status pesanan tidak valid",
+-  }),
+-});
+-
+-export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
+diff --git a/features/orders/services/order.service.ts b/features/orders/services/order.service.ts
+deleted file mode 100644
+index 9f029bc..0000000
+--- a/features/orders/services/order.service.ts
++++ /dev/null
+@@ -1,326 +0,0 @@
+-import prisma from "@/lib/prisma";
+-import { CreateOrderInput } from "../schemas/order.schema";
+-import { createNotificationService } from "@/features/notifications/services/notification.service";
+-import { Prisma } from "@/app/generated/prisma/client";
+-
+-export async function createOrderService(data: CreateOrderInput) {
+-  const { userId, items } = data;
+-
+-  // Aggregate items by a composite key so same products with different variants are separated
+-  const aggregatedItems = new Map<string, { productId: string; productVariantId?: string; quantity: number }>();
+-  
+-  for (const item of items) {
+-    const key = item.productVariantId ? `${item.productId}-${item.productVariantId}` : item.productId;
+-    const current = aggregatedItems.get(key) || { productId: item.productId, productVariantId: item.productVariantId, quantity: 0 };
+-    current.quantity += item.quantity;
+-    aggregatedItems.set(key, current);
+-  }
+-
+-  let total = 0;
+-  const orderItemsData = [];
+-
+-  for (const [key, cartItem] of aggregatedItems.entries()) {
+-    const product = await prisma.product.findUnique({
+-      where: { id: cartItem.productId },
+-      select: {
+-        id: true,
+-        minPrice: true,
+-      },
+-    });
+-
+-    if (!product) {
+-      throw new Error(`Produk dengan ID ${cartItem.productId} tidak ditemukan`);
+-    }
+-
+-    let finalPrice = product.minPrice ?? 0;
+-
+-    if (cartItem.productVariantId) {
+-      const variant = await prisma.productVariant.findUnique({
+-        where: { id: cartItem.productVariantId },
+-        select: { id: true, price: true },
+-      });
+-
+-      if (!variant) {
+-         throw new Error(`Varian produk dengan ID ${cartItem.productVariantId} tidak ditemukan`);
+-      }
+-      finalPrice = variant.price;
+-    }
+-
+-    total += finalPrice * cartItem.quantity;
+-    orderItemsData.push({
+-      productId: cartItem.productId,
+-      productVariantId: cartItem.productVariantId || null,
+-      quantity: cartItem.quantity,
+-      price: finalPrice,
+-    });
+-  }
+-
+-  const order = await prisma.order.create({
+-    data: {
+-      userId,
+-      total,
+-      status: "PENDING",
+-      items: {
+-        create: orderItemsData,
+-      },
+-    },
+-    select: {
+-      id: true,
+-      total: true,
+-      status: true,
+-      user: {
+-        select: {
+-          name: true,
+-        },
+-      },
+-      items: {
+-        select: {
+-          id: true,
+-          productId: true,
+-          productVariantId: true,
+-          quantity: true,
+-          price: true,
+-        },
+-      },
+-    },
+-  });
+-
+-  const admins = await prisma.user.findMany({
+-    where: { role: "ADMIN" },
+-    select: { id: true },
+-  });
+-
+-  for (const admin of admins) {
+-    await createNotificationService({
+-      userId: admin.id,
+-      title: "Pesanan Baru Masuk",
+-      message: `Pesanan baru #${order.id.slice(0, 8)} dari ${order.user.name}. Total: Rp ${total.toLocaleString("id-ID")}`,
+-      type: "ORDER",
+-      link: `/admin/orders/${order.id}`,
+-    });
+-  }
+-
+-  return order;
+-}
+-
+-export async function getUserOrdersService(userId: string, statuses?: string[]) {
+-  const whereClause: Prisma.OrderWhereInput = {
+-    userId,
+-  };
+-
+-  if (statuses && statuses.length > 0) {
+-    whereClause.status = {
+-      in: statuses,
+-    };
+-  }
+-
+-  return await prisma.order.findMany({
+-    where: whereClause,
+-    orderBy: {
+-      createdAt: "desc",
+-    },
+-    select: {
+-      id: true,
+-      status: true,
+-      total: true,
+-      createdAt: true,
+-      items: {
+-        select: {
+-          id: true,
+-          quantity: true,
+-          price: true,
+-          product: {
+-            select: {
+-              id: true,
+-              name: true,
+-              minPrice: true,
+-              pictures: {
+-                select: {
+-                  id: true,
+-                  imageUrl: true,
+-                },
+-                take: 1,
+-              },
+-            },
+-          },
+-          productVariant: {
+-            select: {
+-              id: true,
+-              name: true,
+-              price: true,
+-            }
+-          }
+-        },
+-      },
+-    },
+-  });
+-}
+-
+-export async function getOrdersService({
+-  query,
+-  status,
+-  page = 1,
+-  limit = 10,
+-}: {
+-  query?: string;
+-  status?: string;
+-  page?: number;
+-  limit?: number;
+-} = {}) {
+-  const skip = (page - 1) * limit;
+-
+-  const where: Prisma.OrderWhereInput = {};
+-
+-  if (query) {
+-    where.OR = [
+-      { id: { contains: query, mode: "insensitive" } },
+-      { user: { name: { contains: query, mode: "insensitive" } } },
+-      { user: { email: { contains: query, mode: "insensitive" } } },
+-    ];
+-  }
+-
+-  if (status && status !== "ALL") {
+-    where.status = status;
+-  }
+-
+-  const [orders, total] = await Promise.all([
+-    prisma.order.findMany({
+-      where,
+-      select: {
+-        id: true,
+-        status: true,
+-        total: true,
+-        createdAt: true,
+-        user: {
+-          select: {
+-            name: true,
+-            email: true,
+-          },
+-        },
+-        _count: {
+-          select: { items: true },
+-        },
+-      },
+-      orderBy: {
+-        createdAt: "desc",
+-      },
+-      skip,
+-      take: limit,
+-    }),
+-    prisma.order.count({ where }),
+-  ]);
+-
+-  return {
+-    orders,
+-    pagination: {
+-      total,
+-      pages: Math.ceil(total / limit),
+-      page,
+-      limit,
+-    },
+-  };
+-}
+-
+-export async function getOrderByIdService(id: string) {
+-  const order = await prisma.order.findUnique({
+-    where: { id },
+-    select: {
+-      id: true,
+-      status: true,
+-      total: true,
+-      createdAt: true,
+-      user: {
+-        select: {
+-          id: true,
+-          name: true,
+-          email: true,
+-          phoneNumber: true,
+-        },
+-      },
+-      items: {
+-        select: {
+-          id: true,
+-          quantity: true,
+-          price: true,
+-          product: {
+-            select: {
+-              id: true,
+-              name: true,
+-              minPrice: true,
+-              pictures: {
+-                select: {
+-                  id: true,
+-                  imageUrl: true,
+-                  imagePublicId: true,
+-                },
+-              },
+-            },
+-          },
+-          productVariant: {
+-            select: {
+-              id: true,
+-              name: true,
+-              price: true,
+-            }
+-          }
+-        },
+-      },
+-    },
+-  });
+-
+-  if (!order) {
+-    throw new Error("Order not found");
+-  }
+-
+-  return order;
+-}
+-
+-export async function updateOrderStatusService(id: string, status: string) {
+-  const updatedOrder = await prisma.order.update({
+-    where: { id },
+-    data: { status },
+-    select: {
+-      id: true,
+-      userId: true,
+-    },
+-  });
+-
+-  // Notify Customer
+-  if (updatedOrder.userId) {
+-    let message = `Status pesanan #${updatedOrder.id.slice(0, 8)} berubah menjadi ${status}.`;
+-    let title = "Status Pesanan Update";
+-
+-    switch (status) {
+-      case "PAID":
+-        title = "Pembayaran Diterima";
+-        message = `Pembayaran untuk pesanan #${updatedOrder.id.slice(0, 8)} telah kami terima. Pesanan sedang diproses.`;
+-        break;
+-      case "SHIPPED":
+-        title = "Pesanan Dikirim";
+-        message = `Pesanan #${updatedOrder.id.slice(0, 8)} telah dikirim.`;
+-        break;
+-      case "COMPLETED":
+-        title = "Pesanan Selesai";
+-        message = `Pesanan #${updatedOrder.id.slice(0, 8)} telah selesai. Terima kasih telah berbelanja di Foman Percetakan!`;
+-        break;
+-      case "CANCELLED":
+-        title = "Pesanan Dibatalkan";
+-        message = `Mohon maaf, pesanan #${updatedOrder.id.slice(0, 8)} telah dibatalkan.`;
+-        break;
+-      case "PENDING":
+-        title = "Menunggu Pembayaran";
+-        message = `Pesanan #${updatedOrder.id.slice(0, 8)} sedang menunggu pembayaran.`;
+-        break;
+-    }
+-
+-    await createNotificationService({
+-      userId: updatedOrder.userId,
+-      title: title,
+-      message: message,
+-      type: "ORDER",
+-      link: `/orders`,
+-    });
+-  }
+-
+-  return updatedOrder;
+-}
+diff --git a/features/products/components/customer/product-card.tsx b/features/products/components/customer/product-card.tsx
+index 50cb4ff..9b50f92 100644
+--- a/features/products/components/customer/product-card.tsx
++++ b/features/products/components/customer/product-card.tsx
+@@ -2,32 +2,18 @@
+ 
+ import Image from 'next/image';
+ import Link from 'next/link';
+-import { ShoppingCart, Eye } from 'lucide-react';
++import { Eye } from 'lucide-react';
+ import { Button } from '@/components/ui/button';
+-import { memo, useState, useCallback, useMemo, useTransition } from 'react';
++import { memo, useState, useCallback, useMemo } from 'react';
+ import { formatCurrency } from '@/lib/utils';
+-import { CartProduct, ProductListItem } from '@/types/product';
+-import { useCart } from '@/features/cart/context/cart.context';
++import { ProductListItem } from '@/types/product';
+ 
+ interface ProductCardProps {
+     product: ProductListItem;
+ }
+ 
+-function toCartProduct(product: ProductListItem): CartProduct {
+-    return {
+-        id: product.id,
+-        name: product.name,
+-        slug: product.slug,
+-        minPrice: product.minPrice,
+-        description: product.description,
+-        pictures: product.pictures,
+-    };
+-}
+-
+ export const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
+-    const { addItem } = useCart();
+     const [imageLoaded, setImageLoaded] = useState(false);
+-    const [isPending, startTransition] = useTransition();
+ 
+     const primaryImage = useMemo(
+         () => product.pictures[0]?.imageUrl || '/images/placeholder-image.png',
+@@ -53,20 +39,6 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
+         [product.minPrice, product.maxPrice, product.variants, hasVariants]
+     );
+ 
+-    const handleAddToCart = useCallback(
+-        (e: React.MouseEvent) => {
+-            e.preventDefault();
+-            e.stopPropagation();
+-
+-            if (isPending) return;
+-
+-            startTransition(() => {
+-                addItem(toCartProduct(product));
+-            });
+-        },
+-        [addItem, product, isPending]
+-    );
+-
+     const handleImageLoad = useCallback(() => {
+         setImageLoaded(true);
+     }, []);
+diff --git a/features/products/components/customer/product-options.tsx b/features/products/components/customer/product-options.tsx
+index ac35efc..d201dc1 100644
+--- a/features/products/components/customer/product-options.tsx
++++ b/features/products/components/customer/product-options.tsx
+@@ -2,14 +2,19 @@
+ 
+ import { ProductWithDetails } from '@/types/product';
+ import { formatCurrency } from '@/lib/utils';
+-import { AddToCartButton } from '@/features/cart/components/add-to-cart-button';
+ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+ import { Label } from '@/components/ui/label';
+ import { useProductVariants } from '@/features/products/hooks/useProductVariants';
++import { useState } from 'react';
++import { Button } from '@/components/ui/button';
+ 
+-
+-
+-export function ProductOptions({ product }: { product: ProductWithDetails }) {
++export function ProductOptions({
++    product,
++    storeSettings
++}: {
++    product: ProductWithDetails,
++    storeSettings?: { whatsappNumber?: string, storeName?: string } | null
++}) {
+     const {
+         hasVariants,
+         selectedVariant,
+@@ -20,6 +25,42 @@ export function ProductOptions({ product }: { product: ProductWithDetails }) {
+         isOutOfStock
+     } = useProductVariants(product.variants, (product as any).minPrice ?? 0);
+ 
++    const [quantity, setQuantity] = useState<number>(1);
++    const [errorMsg, setErrorMsg] = useState<string>('');
++
++    const handleWhatsAppOrder = () => {
++        // Validation
++        if (hasVariants && !selectedVariant) {
++            setErrorMsg('Mohon pilih varian produk terlebih dahulu.');
++            return;
++        }
++
++        if (quantity < 1) {
++            setErrorMsg('Jumlah pesanan minimal 1.');
++            return;
++        }
++
++        // Generate Message
++        let message = `Halo, saya ingin memesan produk berikut:\n\n`;
++        message += `≡ƒû¿∩╕Å Produk: ${product.name}\n`;
++
++        if (hasVariants && selectedVariant) {
++            message += `≡ƒôÉ/≡ƒÄ¿ Varian: ${selectedVariant.name}\n`;
++        }
++
++        message += `≡ƒôè Jumlah: ${quantity}\n`;
++        message += `≡ƒôÄ Link Produk: ${window.location.href}\n\n`;
++        message += `Mohon informasi lebih lanjut mengenai estimasi produksi dan pengiriman.\nTerima kasih! ≡ƒÖÅ`;
++
++        // Encode message and create URL
++        const phoneNumber = storeSettings?.whatsappNumber || "6281234567890";
++        const encodedMessage = encodeURIComponent(message);
++        const url = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
++
++        // Open in new tab
++        window.open(url, '_blank');
++    };
++
+     let displayedPrice = (product as any).minPrice ? formatCurrency((product as any).minPrice) : '-';
+     if (hasVariants) {
+         if (selectedVariant) {
+@@ -44,13 +85,6 @@ export function ProductOptions({ product }: { product: ProductWithDetails }) {
+         }
+     }
+ 
+-    const cartProduct = {
+-        ...product,
+-        selectedVariant: selectedVariant
+-            ? { id: selectedVariant.id, name: selectedVariant.name, price: selectedVariant.price }
+-            : undefined
+-    };
+-
+     return (
+         <div className="space-y-6">
+             <div className="font-bold text-primary text-xl sm:text-2xl md:text-2xl">
+@@ -95,13 +129,71 @@ export function ProductOptions({ product }: { product: ProductWithDetails }) {
+ 
+ 
+ 
+-            {/* Add to Cart */}
+-            <div className="pt-6">
+-                <AddToCartButton
+-                    // @ts-ignore - Temporary ignore until CartProduct type perfectly matches
+-                    product={cartProduct as any}
+-                    disabled={Boolean(isOutOfStock)}
+-                />
++            {/* Add to Cart & WhatsApp */}
++            <div className="pt-4 space-y-4">
++                {/* Quantity Input */}
++                <div className="flex items-center gap-3">
++                    <Label className="text-base font-semibold">Jumlah</Label>
++                    <div className="flex items-center border rounded-md">
++                        <Button
++                            variant="ghost"
++                            size="icon"
++                            className="h-8 w-8 rounded-none border-r"
++                            onClick={() => {
++                                setQuantity(Math.max(1, quantity - 1));
++                                setErrorMsg('');
++                            }}
++                        >
++                            -
++                        </Button>
++                        <input
++                            type="number"
++                            min="1"
++                            value={quantity}
++                            onChange={(e) => {
++                                const val = parseInt(e.target.value);
++                                setQuantity(isNaN(val) ? 1 : Math.max(1, val));
++                                setErrorMsg('');
++                            }}
++                            className="w-12 h-8 text-center bg-transparent border-none focus:ring-0 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
++                        />
++                        <Button
++                            variant="ghost"
++                            size="icon"
++                            className="h-8 w-8 rounded-none border-l"
++                            onClick={() => {
++                                setQuantity(quantity + 1);
++                                setErrorMsg('');
++                            }}
++                        >
++                            +
++                        </Button>
++                    </div>
++                </div>
++
++                {errorMsg && (
++                    <div className="text-sm text-destructive font-medium">
++                        {errorMsg}
++                    </div>
++                )}
++
++                <div className="pt-2">
++                    <Button
++                        onClick={handleWhatsAppOrder}
++                        className="w-full gap-2 bg-[#25D366] hover:bg-[#1DA851] text-white"
++                        size="lg"
++                    >
++                        <svg
++                            viewBox="0 0 24 24"
++                            width="20"
++                            height="20"
++                            fill="currentColor"
++                        >
++                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
++                        </svg>
++                        Order via WhatsApp
++                    </Button>
++                </div>
+             </div>
+         </div>
+     );
+diff --git a/prisma/schema.prisma b/prisma/schema.prisma
+index 4002e82..f02d376 100644
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -22,6 +22,7 @@ model User {
+   profilePublicId String?
+   role            Role           @default(CUSTOMER)
+   phoneNumber     String         @unique
++  // SAFE TO DELETE - no longer used
+   orders          Order[]
+   notifications   Notification[]
+   createdAt       DateTime       @default(now())
+@@ -40,6 +41,7 @@ model Product {
+   pictures       ProductPicture[]
+   variants       ProductVariant[]
+   specifications ProductSpecification[]
++  // SAFE TO DELETE - no longer used
+   orderItems     OrderItem[]
+   createdAt      DateTime               @default(now())
+   updatedAt      DateTime               @updatedAt
+@@ -68,6 +70,7 @@ model ProductVariant {
+   unit       String?
+   createdAt  DateTime    @default(now())
+   updatedAt  DateTime    @updatedAt
++  // SAFE TO DELETE - no longer used
+   orderItems OrderItem[]
+ 
+   @@index([productId])
+@@ -95,6 +98,7 @@ model ProductPicture {
+   product       Product  @relation(fields: [productId], references: [id])
+ }
+ 
++// SAFE TO DELETE - no longer used
+ model Order {
+   id        String      @id @default(uuid())
+   userId    String
+@@ -110,6 +114,7 @@ model Order {
+   @@index([userId])
+ }
+ 
++// SAFE TO DELETE - no longer used
+ model OrderItem {
+   id               String          @id @default(uuid())
+   orderId          String

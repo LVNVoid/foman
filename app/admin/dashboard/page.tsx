@@ -1,9 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDashboardStats } from "@/features/dashboard/actions/dashboard.actions";
-import { CreditCard, DollarSign, Package, ShoppingCart, Users, TrendingUp, Clock } from "lucide-react";
+import { CreditCard, Folder, Package, Users, AlertTriangle, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { formatCurrency, formatDate } from "@/lib/utils";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -29,23 +28,18 @@ export default async function DashboardAdminPage() {
 
   const statCards = [
     {
-      title: "Total Pendapatan Bulan Ini",
-      value: formatCurrency(stats.totalRevenue),
-      description: "Total pendapatan",
-      icon: DollarSign,
-    },
-    {
-      title: "Total Pesanan Bulan Ini",
-      value: stats.totalOrders,
-      description: "Pesanan masuk",
-      icon: ShoppingCart,
-    },
-    {
       title: "Total Produk",
       value: stats.totalProducts,
-      description: "Produk aktif",
+      description: "Keseluruhan produk",
       icon: Package,
     },
+    {
+      title: "Total Kategori",
+      value: stats.totalCategories,
+      description: "Kategori produk",
+      icon: Folder,
+    },
+
     {
       title: "Total Pelanggan",
       value: stats.totalCustomers,
@@ -67,12 +61,6 @@ export default async function DashboardAdminPage() {
       label: "Kategori",
       description: "Kelola kategori produk"
     },
-    {
-      href: "/admin/orders",
-      icon: ShoppingCart,
-      label: "Pesanan",
-      description: "Kelola pesanan"
-    },
   ];
 
   return (
@@ -86,7 +74,7 @@ export default async function DashboardAdminPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         {statCards.map((stat, index) => (
           <Card key={index}>
             <CardHeader>
@@ -108,52 +96,39 @@ export default async function DashboardAdminPage() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid gap-4 lg:grid-cols-3 ">
-        {/* Recent Orders - Takes 2 columns */}
-        <Card className="lg:col-span-2">
+      <div className="grid gap-4 lg:grid-cols-2">
+
+        {/* Out of Stock Warning Component */}
+        <Card>
           <CardHeader className="border-b">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Pesanan Terbaru</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">Pesanan terbaru dari pelanggan</p>
-              </div>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/admin/orders">
-                  Lihat Semua →
-                </Link>
-              </Button>
-            </div>
+            <CardTitle className="text-destructive flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Peringatan Stok Habis
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">Varian produk yang perlu diisi ulang</p>
           </CardHeader>
           <CardContent className="pt-6">
-            {stats.recentOrders.length === 0 ? (
-              <div className="text-center py-12">
-                <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">Tidak ada pesanan ditemukan.</p>
+            {stats.outOfStockVariants.length === 0 ? (
+              <div className="text-center py-8">
+                <CheckCircle2 className="h-10 w-10 text-green-500 mx-auto mb-3" />
+                <p className="text-sm text-green-600 font-medium">Semua stok varian tersedia!</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {stats.recentOrders.map((order: any) => (
+              <div className="space-y-3">
+                {stats.outOfStockVariants.map((variant: any) => (
                   <div
-                    key={order.id}
-                    className="flex items-center p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    key={variant.id}
+                    className="flex justify-between items-center p-3 border rounded-lg bg-destructive/5"
                   >
-                    <div className="flex-shrink-0 w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold text-sm">
-                      {order.user.name.charAt(0).toUpperCase()}
+                    <div>
+                      <p className="font-semibold text-sm">{variant.product.name}</p>
+                      <p className="text-xs text-muted-foreground">Varian: {variant.name}</p>
                     </div>
-                    <div className="ml-4 flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate">{order.user.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{order.user.email}</p>
-                      <div className="flex items-center mt-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {formatDate(order.createdAt)}
-                      </div>
-                    </div>
-                    <div className="ml-4 text-right flex-shrink-0">
-                      <p className="text-sm font-bold">{formatCurrency(order.total)}</p>
-                      <span className={`inline-flex items-center mt-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(order.status)}`}>
-                        {order.status}
-                      </span>
-                    </div>
+                    <Button variant="ghost" size="sm" asChild className="ext-xs font-bold text-destructive hover:text-destructive/80 shrink-0">
+                      <Link href={`/admin/products`}>
+                        Stok 0
+                      </Link>
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -161,7 +136,7 @@ export default async function DashboardAdminPage() {
           </CardContent>
         </Card>
 
-        {/* Quick Actions - Takes 1 column */}
+        {/* Quick Actions */}
         <Card>
           <CardHeader className="border-b">
             <CardTitle>Aksi Cepat</CardTitle>

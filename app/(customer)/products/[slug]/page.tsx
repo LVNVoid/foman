@@ -1,7 +1,6 @@
 import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { AddToCartButton } from '@/features/cart/components/add-to-cart-button';
 import { ProductOptions } from '@/features/products/components/customer/product-options';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -9,6 +8,7 @@ import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
 import { ProductImageGallery } from '@/features/products/components/customer/product-image-gallery';
 import { siteConfig } from '@/lib/seo';
+import { getStoreSettings } from '@/features/settings/actions/settings.actions';
 
 export async function generateStaticParams() {
     const products = await prisma.product.findMany({
@@ -113,6 +113,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductPage({ params }: ProductPageProps) {
     const { slug } = await params;
+
+    const settingsResult = await getStoreSettings();
+    const settings = 'settings' in settingsResult ? settingsResult.settings : null;
 
     const product = await prisma.product.findUnique({
         where: { slug },
@@ -273,7 +276,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     </div>
 
                     {/* Varian, Harga & Add to Cart via ProductOptions */}
-                    <ProductOptions product={product} />
+                    <ProductOptions product={product} storeSettings={settings} />
 
                     {/* Details Tabs */}
                     <div className="pt-8 border-t">
