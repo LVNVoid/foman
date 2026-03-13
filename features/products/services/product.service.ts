@@ -387,12 +387,12 @@ export async function updateProductService(data: UpdateProductInput) {
     prisma.product.update({
       where: { id },
       data: updateData,
-      select: { id: true },
+      select: { id: true, slug: true },
     })
   );
 
   const results = await prisma.$transaction(transactionOperations);
-  return results[results.length - 1]; // Return the product
+  return results[results.length - 1] as { id: string; slug: string; }; // Return the product
 }
 
 export async function deleteProductService(id: string) {

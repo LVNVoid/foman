@@ -61,9 +61,9 @@ export async function createProduct(formData: FormData) {
     return { error: { form: [error.message || "Failed to create product"] } };
   }
 
-  revalidatePath("/admin/products");
-  revalidatePath("/products");
-  revalidatePath("/");
+  revalidatePath("/admin/products", "layout");
+  revalidatePath("/products", "layout");
+  revalidatePath("/", "layout");
   redirect("/admin/products");
 }
 
@@ -102,23 +102,24 @@ export async function updateProduct(id: string, formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
+  let updatedProduct;
   try {
-    await updateProductService(parsed.data);
+    updatedProduct = await updateProductService(parsed.data);
   } catch (error: any) {
     console.error("Update product service error:", error);
     return { error: { form: [error.message || "Failed to update product"] } };
   }
 
-  revalidatePath("/admin/products");
+  revalidatePath(`/products/${updatedProduct.slug}`);
   revalidatePath(`/admin/products/${id}`);
-  revalidatePath("/products");
-  revalidatePath("/");
+  revalidatePath("/admin/products", "layout");
+  revalidatePath("/", "layout");
   redirect("/admin/products");
 }
 
 export async function deleteProduct(id: string) {
   await deleteProductService(id);
-  revalidatePath("/admin/products");
-  revalidatePath("/products");
-  revalidatePath("/");
+  revalidatePath("/admin/products", "layout");
+  revalidatePath("/products", "layout");
+  revalidatePath("/", "layout");
 }
