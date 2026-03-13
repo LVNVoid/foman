@@ -1,16 +1,28 @@
 import Link from 'next/link';
-import { Printer, Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react';
-export function Footer({ settings }: { settings?: Record<string, any> | null }) {
+import Image from 'next/image';
+import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import prisma from '@/lib/prisma';
+
+export async function Footer({ settings }: { settings?: Record<string, any> | null }) {
     const storeName = settings?.storeName || 'Foman Kreasi';
+    const categories = await prisma.category.findMany({
+        select: { id: true, name: true, slug: true },
+        orderBy: { name: 'asc' }
+    });
     return (
         <footer className="w-full border-t bg-background/50 backdrop-blur-sm">
             <div className="container py-12 md:py-20">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
                     <div className="space-y-6">
-                        <Link href="/" className="flex items-center gap-2 group">
-                            <div className="bg-primary/10 p-2 rounded-lg group-hover:bg-primary/20 transition-colors">
-                                <Printer className="h-6 w-6 text-primary" />
-                            </div>
+                        <Link href="/" className="flex items-center gap-1.5 sm:gap-4 group shrink-0">
+                            <Image
+                                src="/logo-foman.png"
+                                alt={storeName}
+                                width={200}
+                                height={200}
+                                className="h-12 w-auto object-contain"
+                                priority
+                            />
                             <span className="text-xl font-bold tracking-tight">{storeName}</span>
                         </Link>
                         <p className="text-sm text-muted-foreground leading-relaxed">
@@ -22,10 +34,13 @@ export function Footer({ settings }: { settings?: Record<string, any> | null }) 
                     <div>
                         <h3 className="font-semibold mb-4">Produk</h3>
                         <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><Link href="/products?category=brosur" className="hover:text-primary">Brosur</Link></li>
-                            <li><Link href="/products?category=kalender" className="hover:text-primary">Kalender</Link></li>
-                            <li><Link href="/products?category=kartu-nama" className="hover:text-primary">Kartu Nama</Link></li>
-                            <li><Link href="/products?category=undangan" className="hover:text-primary">Undangan</Link></li>
+                            {categories.map((category) => (
+                                <li key={category.id}>
+                                    <Link href={`/products?category=${category.slug}`} className="hover:text-primary">
+                                        {category.name}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
 
@@ -59,26 +74,12 @@ export function Footer({ settings }: { settings?: Record<string, any> | null }) 
                                 </li>
                             )}
                         </ul>
-                        <div className="flex gap-4 mt-4">
-                            <Link href="#" className="text-muted-foreground hover:text-primary">
-                                <Facebook className="h-5 w-5" />
-                            </Link>
-                            <Link href="#" className="text-muted-foreground hover:text-primary">
-                                <Twitter className="h-5 w-5" />
-                            </Link>
-                            <Link href="#" className="text-muted-foreground hover:text-primary">
-                                <Instagram className="h-5 w-5" />
-                            </Link>
-                        </div>
                     </div>
                 </div>
 
                 <div className="border-t mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
                     <p>© {new Date().getFullYear()} {storeName}. Hak cipta dilindungi.</p>
-                    <div className="flex gap-6">
-                        <Link href="/privacy" className="hover:text-primary">Kebijakan Privasi</Link>
-                        <Link href="/terms" className="hover:text-primary">Syarat & Ketentuan</Link>
-                    </div>
+
                 </div>
             </div>
         </footer>

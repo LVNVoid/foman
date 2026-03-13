@@ -4,7 +4,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, X } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, Settings, X, LogOut } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -26,16 +27,16 @@ const sidebarItems = [
         href: "/admin/categories",
         icon: Package,
     },
-    {
-        title: "Pesanan",
-        href: "/admin/orders",
-        icon: ShoppingCart,
-    },
-    {
-        title: "Data Pelanggan",
-        href: "/admin/customers",
-        icon: Users,
-    },
+    // {
+    //     title: "Pesanan",
+    //     href: "/admin/orders",
+    //     icon: ShoppingCart,
+    // },
+    // {
+    //     title: "Data Pelanggan",
+    //     href: "/admin/customers",
+    //     icon: Users,
+    // },
     {
         title: "Pengaturan",
         href: "/admin/settings",
@@ -61,11 +62,11 @@ export function AdminSidebar({ storeName }: { storeName?: string }) {
             {/* Sidebar */}
             <aside
                 className={cn(
-                    "fixed inset-y-0 left-0 z-50 w-64 border-r bg-sidebar text-sidebar-foreground transition-transform duration-300 ease-in-out lg:static lg:translate-x-0",
+                    "fixed inset-y-0 left-0 z-50 w-64 border-r bg-sidebar text-sidebar-foreground transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col",
                     sidebarOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
-                <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-6">
+                <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-6 shrink-0">
                     <Link href="/admin/dashboard" className="flex items-center gap-2 font-bold text-xl">
                         <span className="text-primary">{storeName || 'Admin'}</span>
                     </Link>
@@ -80,7 +81,7 @@ export function AdminSidebar({ storeName }: { storeName?: string }) {
                     </Button>
                 </div>
 
-                <div className="flex flex-col gap-1 p-4">
+                <div className="flex flex-col gap-1 p-4 flex-1 overflow-y-auto">
                     {sidebarItems.map((item) => {
                         const isActive = pathname === item.href;
                         return (
@@ -100,6 +101,16 @@ export function AdminSidebar({ storeName }: { storeName?: string }) {
                             </Link>
                         );
                     })}
+                </div>
+                
+                <div className="p-4 border-t border-sidebar-border mt-auto">
+                    <button
+                        onClick={() => signOut({ callbackUrl: '/' })}
+                        className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-red-500 hover:text-red-600 focus:outline-none"
+                    >
+                        <LogOut className="h-4 w-4" />
+                        Keluar
+                    </button>
                 </div>
             </aside>
         </>

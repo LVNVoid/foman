@@ -136,12 +136,6 @@ export function LoginForm({
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Sedang masuk...' : 'Masuk'}
               </Button>
-              <div className="text-center text-sm">
-                Belum punya akun?{' '}
-                <Link href="/register" className="underline underline-offset-4">
-                  Daftar
-                </Link>
-              </div>
             </FieldGroup>
           </form>
         </CardContent>

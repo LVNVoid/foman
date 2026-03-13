@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import Image from 'next/image';
+import { Separator } from '@/components/ui/separator';
 
 export function Navbar({ storeName }: { storeName?: string }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -96,9 +97,6 @@ export function Navbar({ storeName }: { storeName?: string }) {
                             <span className="sr-only">Cari</span>
                         </Button>
 
-                        {/* Notification Bell */}
-                        <NotificationBell />
-
                         {/* Theme Toggle */}
                         <div className="hidden sm:block">
                             <ModeToggle />
@@ -106,9 +104,7 @@ export function Navbar({ storeName }: { storeName?: string }) {
 
                         {/* Desktop User Menu */}
                         <div className="hidden lg:flex items-center gap-2">
-                            {!mounted ? (
-                                <div className="w-20 h-10" />
-                            ) : session ? (
+                            {session && (
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-full overflow-hidden p-0">
@@ -159,15 +155,6 @@ export function Navbar({ storeName }: { storeName?: string }) {
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
-                            ) : (
-                                <>
-                                    <Link href="/login">
-                                        <Button variant="ghost" size="sm">Masuk</Button>
-                                    </Link>
-                                    <Link href="/register">
-                                        <Button size="sm">Daftar</Button>
-                                    </Link>
-                                </>
                             )}
                         </div>
 
@@ -242,7 +229,7 @@ export function Navbar({ storeName }: { storeName?: string }) {
                                                 Kontak
                                             </Link>
                                             {mounted && session && (
-                                                <>
+                                                <div className='flex flex-col py-3 border-t border-b'>
                                                     {session.user.role === 'ADMIN' && (
                                                         <Link
                                                             href="/admin/dashboard"
@@ -259,7 +246,7 @@ export function Navbar({ storeName }: { storeName?: string }) {
                                                     >
                                                         Profil
                                                     </Link>
-                                                </>
+                                                </div>
                                             )}
                                         </nav>
 
@@ -269,33 +256,17 @@ export function Navbar({ storeName }: { storeName?: string }) {
                                             <ModeToggle />
                                         </div>
 
-                                        {/* Auth Buttons */}
-                                        {mounted && (
-                                            <div className="flex flex-col gap-2 mt-auto">
-                                                {session ? (
-                                                    <Button
-                                                        variant="outline"
-                                                        className="w-full text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                                                        onClick={() => {
-                                                            handleLogout();
-                                                            setIsOpen(false);
-                                                        }}
-                                                    >
-                                                        Keluar
-                                                    </Button>
-                                                ) : (
-                                                    <>
-                                                        <Link href="/login" onClick={() => setIsOpen(false)}>
-                                                            <Button variant="outline" className="w-full">
-                                                                Masuk
-                                                            </Button>
-                                                        </Link>
-                                                        <Link href="/register" onClick={() => setIsOpen(false)}>
-                                                            <Button className="w-full">Daftar</Button>
-                                                        </Link>
-                                                    </>
-                                                )}
-                                            </div>
+                                        {mounted && session && (
+                                            <Button
+                                                variant="outline"
+                                                className="w-full text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                                                onClick={() => {
+                                                    handleLogout();
+                                                    setIsOpen(false);
+                                                }}
+                                            >
+                                                Keluar
+                                            </Button>
                                         )}
                                     </div>
                                 </SheetContent>
