@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description:
     'Foman Kreasi menawarkan layanan cetak berkualitas tinggi: offset, digital printing, dan large format printing untuk kebutuhan bisnis maupun personal.',
   alternates: {
-    canonical: siteConfig.baseUrl,
+    canonical: '/',
   },
   openGraph: {
     title: 'Foman Kreasi - Jasa Cetak Profesional Indonesia',

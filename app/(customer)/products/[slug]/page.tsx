@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     }
 
     const primaryImage = product.pictures[0]?.imageUrl || '/images/placeholder-image.png';
-    const productUrl = `${siteConfig.baseUrl}/products/${slug}`;
+    const productUrl = `/products/${slug}`;
 
     const seoDescription = product.description
         ? `${product.description.substring(0, 150)}${product.description.length > 150 ? '...' : ''}`

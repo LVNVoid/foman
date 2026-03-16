@@ -15,7 +15,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.baseUrl),
+  metadataBase: new URL('https://foman.id'),
   title: {
     default: 'Foman Kreasi - Jasa Cetak Berkualitas & Terpercaya',
     template: '%s | Foman Kreasi',

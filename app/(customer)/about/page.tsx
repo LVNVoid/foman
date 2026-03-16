@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     description: 'Pelajari lebih lanjut tentang Foman Percetakan. Kami adalah mitra percetakan terpercaya sejak bertahun-tahun dengan teknologi modern dan tim ahli profesional.',
     keywords: ['tentang foman percetakan', 'profil percetakan', 'sejarah foman kreasi', 'layanan cetak terbaik'],
     alternates: {
-        canonical: `${siteConfig.baseUrl}/about`,
+        canonical: '/about',
     },
     openGraph: {
         title: 'Tentang Kami | Foman Percetakan',

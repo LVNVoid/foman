@@ -1,9 +1,8 @@
 import { MetadataRoute } from 'next';
 import prisma from '@/lib/prisma';
-import { siteConfig } from '@/lib/seo';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = siteConfig.baseUrl;
+  const baseUrl = 'https://foman.id';
 
   // 1. Static Routes
   const staticRoutes: MetadataRoute.Sitemap = [
