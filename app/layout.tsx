@@ -4,7 +4,7 @@ import { SessionProvider } from './providers/session-provider';
 import NextTopLoader from 'nextjs-toploader';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from 'react-hot-toast';
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Metadata } from 'next';
 import { siteConfig } from '@/lib/seo';
 import { OrganizationJsonLd } from '@/components/json-ld';
@@ -20,7 +20,8 @@ export const metadata: Metadata = {
     default: 'Foman Kreasi - Jasa Cetak Berkualitas & Terpercaya',
     template: '%s | Foman Kreasi',
   },
-  description: 'Foman Kreasi menyediakan jasa cetak berkualitas tinggi untuk brosur, kartu nama, banner, spanduk, stiker, dan berbagai kebutuhan percetakan lainnya dengan harga terjangkau dan pengiriman cepat.',
+  description:
+    'Foman Kreasi menyediakan jasa cetak berkualitas tinggi untuk brosur, kartu nama, banner, spanduk, stiker, dan berbagai kebutuhan percetakan lainnya dengan harga terjangkau dan pengiriman cepat.',
   keywords: [
     'percetakan depok',
     'jasa cetak depok',
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
     'cetak murah',
     'cetak cepat',
     'digital printing',
-    'cetak majalah depok'
+    'cetak majalah depok',
   ],
   authors: [{ name: 'Foman Kreasi' }],
   creator: 'Foman Kreasi',
@@ -51,14 +52,15 @@ export const metadata: Metadata = {
     url: siteConfig.baseUrl,
     siteName: 'Foman Kreasi',
     title: 'Foman Kreasi - Jasa Cetak Berkualitas & Terpercaya',
-    description: 'Solusi lengkap untuk semua kebutuhan percetakan Anda. Kualitas terbaik, harga kompetitif, dan layanan profesional.',
+    description:
+      'Solusi lengkap untuk semua kebutuhan percetakan Anda. Kualitas terbaik, harga kompetitif, dan layanan profesional.',
     images: [
       {
         url: '/og-image-foman.jpg',
         width: 1200,
         height: 630,
         alt: 'Foman Kreasi - Jasa Cetak Profesional',
-      }
+      },
     ],
   },
   twitter: {
@@ -82,9 +84,7 @@ export const metadata: Metadata = {
   verification: {
     google: 'bqnPBWYX8-P_cG1MdwSLqSeGEEAxj0eIjZJWe5oatU8',
   },
-}
-
-
+};
 
 export default function RootLayout({
   children,
@@ -93,18 +93,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} antialiased font-sans`}
-      >
+      <body className={`${inter.variable} antialiased font-sans`}>
         <OrganizationJsonLd />
         <NextTopLoader showSpinner={false} />
         <SpeedInsights />
         <SessionProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-          >
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             {children}
           </ThemeProvider>
           <Toaster position="top-center" />

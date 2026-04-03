@@ -41,17 +41,20 @@ export async function CategoryGrid({ activeCategory }: CategoryGridProps) {
 
   return (
     <section className="mb-8">
-      <h2 className="text-xl font-bold mb-4">Kategori Pilihan</h2>
+      <h2 className="text-xl md:text-2xl font-bold mb-8 tracking-tight">
+        Kategori Pilihan
+      </h2>
       <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-y-4 gap-x-4">
         <Link
           href="/?category="
           className="flex flex-col items-center group cursor-pointer"
+          scroll={false}
         >
           <div
             className={`w-12 h-12 md:w-14 md:h-14 rounded-lg flex items-center justify-center mb-2 transition-transform group-hover:scale-105 border ${!activeCategory ? 'bg-primary/5 border-primary shadow-sm' : 'bg-secondary/10 border-transparent'}`}
           >
             <LayoutGrid
-              className={`w-5 h-5 md:w-6 md:h-6 ${!activeCategory ? 'text-primary' : 'text-muted-foreground'}`}
+              className={`w-5 h-5 md:w-8 md:h-8 ${!activeCategory ? 'text-primary' : 'text-muted-foreground'}`}
             />
           </div>
           <span
@@ -69,6 +72,7 @@ export async function CategoryGrid({ activeCategory }: CategoryGridProps) {
             <Link
               key={category.id}
               href={`/?category=${category.slug}`}
+              scroll={false}
               className="flex flex-col items-center group cursor-pointer"
             >
               <div
@@ -84,7 +88,7 @@ export async function CategoryGrid({ activeCategory }: CategoryGridProps) {
                   />
                 ) : (
                   <Icon
-                    className={`w-5 h-5 md:w-6 md:h-6 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
+                    className={`w-5 h-5 md:w-8 md:h-8 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
                   />
                 )}
               </div>

@@ -1,7 +1,6 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  // Disallow indexing for Vercel preview environments or any non-canonical domain
   const isProdConfigured = process.env.NEXT_PUBLIC_BASE_URL === 'https://foman.id';
 
   if (!isProdConfigured) {

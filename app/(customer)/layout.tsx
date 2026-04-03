@@ -6,18 +6,18 @@ import { WhatsAppButton } from '@/components/WhatsAppButton';
 import { GridPattern } from '@/components/ui/grid-pattern';
 
 export default async function CustomerLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    const result = await getStoreSettings();
-    const settings = 'settings' in result ? result.settings : null;
-    const storeName = settings?.storeName;
+  const result = await getStoreSettings();
+  const settings = 'settings' in result ? result.settings : null;
+  const storeName = settings?.storeName;
 
-    return (
-        <div className="flex min-h-screen flex-col max-w-8xl relative isolate">
-            {/* Dynamic Background */}
-            <div className="fixed inset-0 -z-10 h-full w-full bg-background overflow-hidden">
+  return (
+    <div className="flex min-h-screen flex-col max-w-8xl relative">
+      {/* Dynamic Background */}
+      {/* <div className="fixed inset-0 -z-10 h-full w-full bg-background overflow-hidden">
                 <GridPattern
                     width={40}
                     height={40}
@@ -28,14 +28,14 @@ export default async function CustomerLayout({
                 />
                 <div className="absolute bottom-0 left-[-20%] right-0 top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,oklch(var(--primary)/0.15),rgba(255,255,255,0))] blur-[100px] dark:bg-[radial-gradient(circle_farthest-side,oklch(var(--primary)/0.25),rgba(255,255,255,0))]"></div>
                 <div className="absolute bottom-0 right-[-20%] top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,oklch(var(--secondary)/0.15),rgba(255,255,255,0))] blur-[100px] dark:bg-[radial-gradient(circle_farthest-side,oklch(var(--secondary)/0.25),rgba(255,255,255,0))]"></div>
-            </div>
+            </div> */}
 
-            <Navbar storeName={storeName} />
-            <div className="container mx-auto px-2">
-                <main className="flex-1">{children}</main>
-                <Footer settings={settings} />
-            </div>
-            <WhatsAppButton phoneNumber={settings?.whatsappNumber} />
-        </div>
-    );
+      <Navbar storeName={storeName} />
+      <div className="container mx-auto px-2">
+        <main className="flex-1">{children}</main>
+        <Footer settings={settings} />
+      </div>
+      <WhatsAppButton phoneNumber={settings?.whatsappNumber} />
+    </div>
+  );
 }
