@@ -1,5 +1,6 @@
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { Analytics } from '@vercel/analytics/next';
 import { SessionProvider } from './providers/session-provider';
 import NextTopLoader from 'nextjs-toploader';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -100,6 +101,7 @@ export default function RootLayout({
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             {children}
+            <Analytics />
           </ThemeProvider>
           <Toaster position="top-center" />
         </SessionProvider>
