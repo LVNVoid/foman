@@ -34,9 +34,9 @@ export function Navbar({ storeName }: { storeName?: string }) {
     signOut();
   };
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // useEffect(() => {
+  //   setMounted(true);
+  // }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -115,9 +115,9 @@ export function Navbar({ storeName }: { storeName?: string }) {
             </Button>
 
             {/* Theme Toggle */}
-            <div className="hidden sm:block">
+            {/* <div className="hidden sm:block">
               <ModeToggle />
-            </div>
+            </div> */}
 
             {/* Desktop User Menu */}
             <div className="hidden lg:flex items-center gap-2">
@@ -282,10 +282,10 @@ export function Navbar({ storeName }: { storeName?: string }) {
                     </nav>
 
                     {/* Theme Toggle for Mobile */}
-                    <div className="flex items-center justify-between py-3 px-3 border-t border-b">
+                    {/* <div className="flex items-center justify-between py-3 px-3 border-t border-b">
                       <span className="text-sm font-medium">Tema</span>
                       <ModeToggle />
-                    </div>
+                    </div> */}
 
                     {mounted && session && (
                       <Button
